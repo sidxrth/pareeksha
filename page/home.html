@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #000;
+            color: #0f0; /* Green text for the home screen */
+            text-shadow: 0 0 5px #0f0;
+        }
+        .terminal-container {
+            border: 2px solid #0f0;
+            padding: 2rem;
+            box-shadow: 0 0 15px #0f0;
+        }
+        .terminal-btn {
+            background-color: transparent;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 0.5rem 1rem;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .terminal-btn:hover {
+            background-color: #0f0;
+            color: #000;
+            text-shadow: none;
+        }
+        .blinking-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.5rem;
+            background-color: #0f0;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            from, to { background-color: transparent }
+            50% { background-color: #0f0; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="terminal-container w-full max-w-2xl">
+        <h1 class="text-4xl mb-4">> ACCESS GRANTED.</h1>
+        <p class="text-2xl mb-6" id="welcomeMessage"></p>
+        
+        <p class="mb-4">> System nominal. All functions are online.</p>
+        <p class="mb-6">> What is your next command?</p>
+
+        <div class="flex space-x-4">
+             <button class="terminal-btn" onclick="window.location.href='index.html'"> > LOGOUT </button>
+        </div>
+        
+        <div class="mt-8 text-sm">
+            <p>> System Time: <span id="systemTime"></span></p>
+            <p>> Connection: SECURE</p>
+        </div>
+    </div>
+
+    <script>
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const systemTimeEl = document.getElementById('systemTime');
+
+        window.onload = function() {
+            const userName = localStorage.getItem('system_user_name');
+            if (userName) {
+                welcomeMessage.innerHTML = `> Welcome, ${userName}. <span class="blinking-cursor"></span>`;
+            } else {
+                welcomeMessage.innerHTML = `> Welcome, User. <span class="blinking-cursor"></span>`;
+            }
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        };
+
+        function updateTime() {
+            systemTimeEl.textContent = new Date().toLocaleString();
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pareeksha - Test Completed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --primary-accent: #3182ce;
+            --primary-accent-hover: #2b6cb0;
+            --success-color: #38a169;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .completion-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .completion-container h1 {
+            font-size: 2.25rem; /* 36px */
+            font-weight: 700;
+            color: #2c5282;
+            margin-bottom: 0.5rem;
+        }
+
+        .completion-container p {
+            color: var(--text-secondary);
+            font-size: 1.1rem; /* 18px */
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .primary-btn {
+            background-color: var(--primary-accent);
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-top: 1.5rem;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--primary-accent-hover);
+        }
+        
+        /* Success Animation Styles */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: var(--success-color);
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--success-color);
+            animation: scale .3s ease-in-out .9s both;
+        }
+
+        .success-checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: var(--success-color);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .success-checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
+        }
+
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="completion-container">
+        <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="success-checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="success-checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+
+        <h1>Test Completed!</h1>
+        <p>
+            Thank you for taking the exam. Your score will be sent to your
+            registered email address in a short interval of time.
+            <br>
+            You may now close this window.
+        </p>
+
+        <button id="closeBtn" class="primary-btn">Close Window</button>
+    </div>
+
+    <script>
+        document.getElementById('closeBtn').addEventListener('click', () => {
+            // This will attempt to close the current browser window/tab.
+            // Note: For security reasons, scripts can only close windows they opened.
+            window.close();
+        });
+    </script>
+
+</body>
+</html>

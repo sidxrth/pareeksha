@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pareeksha - Secure Examination Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #f0f4f8; /* Light, clean background */
+            color: #1a202c;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 2rem;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #2c5282; /* Deep blue color */
+        }
+        .header p {
+            color: #4a5568;
+            font-size: 1.25rem;
+        }
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        .exam-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .exam-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(44, 82, 130, 0.15);
+        }
+        .exam-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            /* Using a gradient for the icon color */
+            background: linear-gradient(45deg, #4299e1, #3182ce);
+            -webkit-mask-image: var(--icon-url);
+            mask-image: var(--icon-url);
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+        }
+        .exam-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .exam-details {
+            font-size: 0.9rem;
+            color: #718096;
+            margin: 0.5rem 0 1.5rem;
+        }
+        .start-btn {
+            background-color: #3182ce;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            border-radius: 8px;
+        }
+        .start-btn:hover {
+            background-color: #2b6cb0;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="container">
+        <header class="header text-center">
+            <h1>Pareeksha</h1>
+            <p>Select the Exam</p>
+        </header>
+        
+        <main class="exam-grid">
+            <div class="exam-card">
+                <div class="exam-icon" style="--icon-url: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M8,3L2.5,12L8,21H16L21.5,12L16,3H8M8.5,5H15.2L19.5,12L15.2,19H8.5L4.2,12L8.5,5Z%22/%3E%3C/svg%3E');"></div>
+                <h2 class="exam-title">C Programming</h2>
+                <p class="exam-details">60 Mins | 50 Questions</p>
+                <a href="./auth/signup.html?exam=c" class="start-btn">Start Authentication</a>
+            </div>
+
+            <div class="exam-card">
+                 <div class="exam-icon" style="--icon-url: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M16.5,5.5C16.5,5.5 17.5,6 17.5,7S16,8 15,8.5C14,9 14,10 14,10L12,12L14,14C14,14 14,15 15,15.5C16,16 17.5,17 17.5,18S16.5,18.5 16.5,18.5L14,21.5V23H11V21L9.5,19.5C9.5,19.5 8.5,19 8.5,18S10,16 11,15.5C12,15 12,14 12,14L14,12L12,10C12,10 12,9 11,8.5C10,8 8.5,7 8.5,6S9.5,5.5 9.5,5.5L12,2.5V1H15V3L16.5,5.5M7,12C7,13.1 6.1,14 5,14S3,13.1 3,12C3,10.9 3.9,10 5,10S7,10.9 7,12Z%22/%3E%3C/svg%3E');"></div>
+                <h2 class="exam-title">Python</h2>
+                <p class="exam-details">60 Mins | 45 Questions</p>
+                <a href="./auth/signup.html?exam=python" class="start-btn">Start Authentication</a>
+            </div>
+
+            <div class="exam-card">
+                <div class="exam-icon" style="--icon-url: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M1,3H23V5H19A2,2 0 0,1 17,7V17A4,4 0 0,1 13,21H7A4,4 0 0,1 3,17V7A2,2 0 0,1 1,5V3M5,7V17A2,2 0 0,0 7,19H13A2,2 0 0,0 15,17V7H5Z%22/%3E%3C/svg%3E');"></div>
+                <h2 class="exam-title">Java</h2>
+                <p class="exam-details">90 Mins | 60 Questions</p>
+                <a href="./auth/signup.html?exam=java" class="start-btn">Start Authentication</a>
+            </div>
+
+            <div class="exam-card">
+                <div class="exam-icon" style="--icon-url: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M13,13.46V10.54C13,9.7 13.94,9.23 14.6,9.7L16.47,10.82C17.06,11.16 17.06,11.97 16.47,12.31L14.6,13.43C13.94,13.9 13,13.3 13,13.46M11,13.46V10.54C11,9.7 11.94,9.23 12.6,9.7L14.47,10.82C15.06,11.16 15.06,11.97 14.47,12.31L12.6,13.43C11.94,13.9 11,13.3 11,13.46M19,15V13H17V11H19V9H21V11H23V13H21V15H19M1,12C1,16.97 5.03,21 10,21C11.73,21 13.36,20.47 14.73,19.57L11.5,17.5V16.5L16.29,19.34C17.95,18.45 19,16.88 19,15C19,11.13 15.87,8 12,8H9V6H14C18.42,6 22,9.58 22,14C22,16.22 21.16,18.22 19.79,19.79C18.22,21.16 16.22,22 14,22H10C4.48,22 0,17.52 0,12C0,6.48 4.48,2 10,2H19V4H10C5.58,4 2,7.58 2,12Z%22/%3E%3C/svg%3E');"></div>
+                <h2 class="exam-title">C++</h2>
+                <p class="exam-details">90 Mins | 60 Questions</p>
+                <a href="./auth/signup.html?exam=c++" class="start-btn">Start Authentication</a>
+            </div>
+
+            <div class="exam-card">
+                <div class="exam-icon" style="--icon-url: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M6.5,20Q4.22,20 2.61,18.43Q1,16.85 1,14.58Q1,12.64 2.18,11.22Q3.35,9.8 5.25,9.66Q5.88,6.81 7.89,5.2Q9.9,3.58 12.5,3.58Q15.34,3.58 17.42,5.55Q19.5,7.53 19.5,10.42Q19.5,11.08 19.39,11.66Q19.28,12.25 19.06,12.78Q20.89,13.06 21.94,14.48Q23,15.9 23,17.75Q23,19.41 21.84,20.71Q20.68,22 19,22H13Q12.33,22 11.66,21.5Q11,21 11,20.33V20H6.5Z%22/%3E%3C/svg%3E');"></div>
+                <h2 class="exam-title">Cloud Computing</h2>
+                <p class="exam-details">45 Mins | 40 Questions</p>
+                <a href="./auth/signup.html?exam=cloud" class="start-btn">Start Authentication</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

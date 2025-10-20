@@ -1,4 +1,4 @@
-users.db 
-users.db 
-"dist/" 
-"node_modules/" 
+dist/ 
+node_modules/ 
+*.exe 
+*.asar 

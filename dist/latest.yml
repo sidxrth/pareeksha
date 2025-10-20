@@ -1,0 +1,8 @@
+version: 1.0.0
+files:
+  - url: ElectronSignupApp-Setup-1.0.0.exe
+    sha512: ZBzDVgYRScep5rwsQZor7nF4GmbuU8VR3FbBfIb7RDfozKE4vB9SkjeKJ7738byUa415cqn67MOlu1A8AltcTQ==
+    size: 93983509
+path: ElectronSignupApp-Setup-1.0.0.exe
+sha512: ZBzDVgYRScep5rwsQZor7nF4GmbuU8VR3FbBfIb7RDfozKE4vB9SkjeKJ7738byUa415cqn67MOlu1A8AltcTQ==
+releaseDate: '2025-10-18T16:48:11.896Z'

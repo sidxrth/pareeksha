@@ -162,7 +162,7 @@
 
     <div id="successModal" class="modal-overlay">
         <div class="modal-content">
-             <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                 <circle class="success-checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
                 <path class="success-checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
@@ -183,8 +183,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const userEmail = urlParams.get('email');
     const examName = urlParams.get('exam');
-    let scanInterval = null; // To hold our setInterval reference
-    let isProcessing = false; // Flag to prevent multiple captures
+    let scanInterval = null;
+    let isProcessing = false;
 
     if (!userEmail || !examName) {
         instruction.textContent = 'ERROR: Missing user or exam details.';
@@ -218,19 +218,19 @@
         if (!userEmail || !examName) return;
         
         scanInterval = setInterval(async () => {
-            if (isProcessing) return; // Don't scan if already processing a face
+            if (isProcessing) return;
 
             const detection = await faceapi.detectSingleFace(video);
             
             if (detection) {
-                isProcessing = true; // Set flag
-                clearInterval(scanInterval); // Stop scanning
+                isProcessing = true;
+                clearInterval(scanInterval);
                 scanStatus.textContent = 'Face Detected!';
                 captureAndSave();
             } else {
                 scanStatus.textContent = 'Looking for a face... Please center yourself.';
             }
-        }, 750); // Check for a face every 750ms
+        }, 750);
     }
 
     async function captureAndSave() {
@@ -252,12 +252,12 @@
                 processingModal.classList.remove('visible');
                 successModal.classList.add('visible');
                 const examTitle = examName.charAt(0).toUpperCase() + examName.slice(1);
-                redirectMessage.textContent = `Redirecting to ${examTitle} Exam...`;
+                redirectMessage.textContent = `Redirecting to ${examTitle} Instructions...`; // MODIFIED TEXT
 
                 setTimeout(() => {
-                    const examFileName = examName.toLowerCase().replace(/\s/g, '_') + '_exam.html';
-                    window.location.href = `../exam/${examFileName}`;
-                }, 3000); // Increased timeout to let user see the success animation
+                    // *** CRITICAL MODIFICATION: Redirect to the new instructions page ***
+                    window.location.href = `exam_instructions.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(examName)}`;
+                }, 3000); 
 
             } catch (error) {
                 // On Save Error
@@ -265,8 +265,8 @@
                 scanStatus.textContent = `SAVE ERROR: ${error.message}`;
                 instruction.textContent = 'Could not save profile. We will try again.';
                 setTimeout(() => {
-                    isProcessing = false; // Reset flag
-                    startAutomaticScan(); // Restart scanning
+                    isProcessing = false;
+                    startAutomaticScan();
                 }, 2000);
             }
         } else {
@@ -275,8 +275,8 @@
             scanStatus.textContent = 'FAILED: Face was lost. Trying again.';
             instruction.textContent = 'Please hold still and center your face in the circle.';
             setTimeout(() => {
-                isProcessing = false; // Reset flag
-                startAutomaticScan(); // Restart scanning
+                isProcessing = false;
+                startAutomaticScan();
             }, 2000);
         }
     }

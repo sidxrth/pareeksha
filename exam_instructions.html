@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pareeksha - Exam Instructions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --primary-accent: #3182ce;
+            --primary-accent-hover: #2c5282;
+            --danger-color: #c53030;
+            --danger-bg: #fff5f5;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 10px 25px rgba(44, 82, 130, 0.15);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-accent-hover);
+        }
+        .instruction-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem 3rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 850px;
+        }
+        .instruction-container .title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .instruction-container .user-info {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        .instruction-container h2 {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-accent-hover);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+         .instruction-container h2.rules-proctoring {
+            color: var(--danger-color);
+        }
+        .instruction-container h2 svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.75rem;
+        }
+        .rule-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .rule-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+        .rule-list li svg {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            margin-top: 3px;
+        }
+        .alert-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--danger-bg);
+            color: var(--danger-color);
+            border-left: 5px solid var(--danger-color);
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+        .alert-box svg {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            margin-right: 1rem;
+        }
+        .accept-btn {
+            background-color: var(--primary-accent);
+            color: white;
+            font-weight: 600;
+            padding: 0.85rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            display: block;
+        }
+        .accept-btn:hover {
+            background-color: var(--primary-accent-hover);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Pareeksha</h1>
+    </header>
+
+    <div class="instruction-container">
+        <h1 id="exam-title" class="title">Exam Instructions</h1>
+        <p id="user-info" class="user-info">Logged in as: N/A</p>
+
+        <div class="alert-box">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+            <div>
+                <strong>CRITICAL PROCTORING WARNING!</strong> Your camera is active. Any deviation from the rules below will result in <strong>IMMEDIATE EXAM TERMINATION</strong>.
+            </div>
+        </div>
+
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            General Exam Rules
+        </h2>
+        <ul class="rule-list">
+            <li>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                <span><strong>Duration:</strong> The total time for the exam is displayed on the screen. The timer is final.</span>
+            </li>
+            <li>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                <span><strong>Environment:</strong> Ensure you are in a quiet, well-lit room with no external noise or distractions.</span>
+            </li>
+            <li>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                <span><strong>Equipment:</strong> Mobile phones and smartwatches must be **powered off** and out of reach.</span>
+            </li>
+             <li>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                <span><strong>Code:</strong> You can use the 'Compile & Run' button multiple times to test your code. **Only your final submission** will be evaluated.</span>
+            </li>
+        </ul>
+
+        <h2 class="rules-proctoring">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L21.5 6.5V17.5L12 23L2.5 17.5V6.5L12 1ZM12 3.31L4.5 7.69V16.31L12 20.69L19.5 16.31V7.69L12 3.31ZM11 14H13V16H11V14ZM11 8H13V12H11V8Z"></path></svg>
+            Proctoring Rules (Strictly Enforced)
+        </h2>
+        <ul class="rule-list">
+            <li>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                <span><strong>Single Face Rule:</strong> Only the **registered user's face** must be visible in the camera frame at all times.</span>
+            </li>
+            <li>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                <span><strong>Attention & Eye Contact:</strong> Your eyes must remain focused on the screen. Looking away repeatedly will be flagged as a violation.</span>
+            </li>
+            <li>
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                <span><strong>Full-Screen Mode:</strong> Attempting to exit full-screen, switch applications (Alt+Tab), or access other desktop functions will terminate the exam.</span>
+            </li>
+            <li>
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                <span><strong>No Exit:</strong> Do not close the browser tab or navigate away before clicking the **"Finish Exam"** button.</span>
+            </li>
+        </ul>
+
+        <div class="mt-12 text-center">
+            <button id="accept-button" class="accept-btn">I Understand and Accept the Rules</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const userEmail = urlParams.get('email');
+        const examSlug = urlParams.get('exam'); // e.g., 'c'
+        const acceptButton = document.getElementById('accept-button');
+        const examTitleEl = document.getElementById('exam-title');
+        const userInfoEl = document.getElementById('user-info');
+
+        // Map slugs to full names
+        const examNames = {
+            'c': 'C Programming',
+            'python': 'Python',
+            'java': 'Java',
+            'c++': 'C++',
+            'cloud': 'Cloud Computing'
+        };
+        
+        const examFullName = examNames[examSlug] || "Unknown Exam";
+        
+        // --- INITIAL SETUP ---
+        if (!userEmail || !examSlug) {
+            examTitleEl.textContent = 'Error Loading Exam';
+            userInfoEl.innerHTML = '<strong>ERROR:</strong> Missing user or exam details in URL.';
+            acceptButton.disabled = true;
+            acceptButton.textContent = 'Cannot Continue';
+            acceptButton.style.backgroundColor = '#a0aec0'; // Muted grey for disabled
+        } else {
+            examTitleEl.textContent = `${examFullName} Instructions`;
+            userInfoEl.innerHTML = `Logged in as: <strong>${userEmail}</strong>`;
+        }
+
+        // --- NAVIGATION LOGIC ---
+        acceptButton.addEventListener('click', () => {
+            if (acceptButton.disabled) return;
+            
+            // Redirect to the actual exam page, preserving the user and exam context
+            // Assumes the exam files are like 'c_exam.html', 'python_exam.html' etc.
+            const examFileName = `${examSlug}_exam.html`;
+            window.location.href = `./exam/${examFileName}?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(examSlug)}`;
+        });
+    </script>
+</body>
+</html>

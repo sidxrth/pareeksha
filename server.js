@@ -23,6 +23,25 @@ const transporter = nodemailer.createTransport({
     auth: { user: 'fdecorder@gmail.com', pass: 'xdwlnjwbhhhghtnl' }
 });
 
+// Function to send the completion email
+function sendCompletionEmail(email, examName, score) {
+    const mailOptions = {
+        from: 'fdecorder@gmail.com',
+        to: email,
+        subject: `Pareeksha Exam Submission: ${examName}`,
+        text: `Dear Student,\n\nYour ${examName} exam has been submitted and graded.\n\nYour score: ${score} / 50\n\nThank you for taking the exam.\n\nSincerely,\nThe Pareeksha Team`
+    };
+    
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Completion Email Error:', error);
+        } else {
+            console.log('Completion Email sent: ' + info.response);
+        }
+    });
+}
+
+
 app.post('/generate-otp', (req, res) => {
     const { email } = req.body;
     if (!email) {
@@ -89,6 +108,30 @@ app.post('/store-face-data', (req, res) => {
     });
 });
 
+// --- NEW ENDPOINT: Retrieve single user's face data for client-side proctoring ---
+app.get('/get-user-face-data', (req, res) => {
+    const { email } = req.query;
+    if (!email) {
+        // Send JSON error if email is missing
+        return res.status(400).json({ message: 'Email query parameter is required.' });
+    }
+    
+    // Select the face_descriptor for the specific user
+    const sql = 'SELECT face_descriptor FROM users WHERE email = ?';
+    db.get(sql, [email], (err, row) => {
+        if (err) {
+            console.error('DB Error (Get User Face Data):', err.message);
+            return res.status(500).json({ message: 'Database error occurred.' });
+        }
+        if (!row || !row.face_descriptor) {
+            // Send JSON error if descriptor is missing/user not found
+            return res.status(404).json({ message: 'User profile or face data not found.' });
+        }
+        // Send the descriptor string back in a JSON object
+        res.status(200).json({ face_descriptor: row.face_descriptor });
+    });
+});
+
 app.get('/get-all-face-data', (req, res) => {
     const sql = 'SELECT email, name, city, exam, face_descriptor FROM users WHERE face_descriptor IS NOT NULL';
     db.all(sql, [], (err, rows) => {
@@ -107,16 +150,22 @@ app.get('/get-all-face-data', (req, res) => {
     });
 });
 
-// --- NEW ENDPOINT FOR EXAM SUBMISSION & SCORING ---
+// --- EXAM SUBMISSION & SCORING ---
 app.post('/submit-exam', async (req, res) => {
     const { email, exam, code, timeRemaining, isCorrect } = req.body;
     let score = 0;
+
+    // Determine the full name of the exam for the email (based on index.html)
+    const examFullName = exam === 'c' ? 'C Programming' : 
+                         exam === 'python' ? 'Python' :
+                         exam === 'java' ? 'Java' : exam === 'c++' ? 'C++' : 
+                         exam === 'cloud' ? 'Cloud Computing' : exam;
 
     if (isCorrect && timeRemaining > 0) {
         score = 50;
     } else {
         try {
-            // --- FIX 1: Changed model name to gemini-2.5-flash ---
+            // FIX: Changed model name to gemini-2.5-flash
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
             const prompt = `
                 The following code was submitted for an exam problem. 
@@ -139,25 +188,25 @@ app.post('/submit-exam', async (req, res) => {
 
     const sql = `UPDATE users SET score = ? WHERE email = ? AND exam = ?`;
     
-    // --- DEBUGGING LOGIC: Check parameters before query (Retained for safety) ---
+    // --- DEBUGGING LOGIC ---
     console.log(`\n[DB DEBUG] Score generated: ${score}`);
     console.log(`[DB DEBUG] Attempting to update user: ${email} for exam: ${exam}`);
     console.log(`[DB DEBUG] Query parameters: [${score}, ${email}, ${exam}]`);
-    // --------------------------------------------------------------------------
+    // -----------------------
 
     db.run(sql, [score, email, exam], function(err) {
         if (err) {
-            // This catches actual DB execution errors (like missing 'score' column if fix wasn't applied)
             console.error('DB Error (Submit Exam):', err.message);
             return res.status(500).json({ message: 'Failed to save score. (DB Error)' }); 
         }
         
-        // --- FIX 2: Check for 0 rows affected (The initial error you reported) ---
         if (this.changes === 0) {
             console.error(`[DB FAILED] UPDATE affected 0 rows. User/Exam combination not found in DB.`);
             return res.status(404).json({ message: 'Error: User not found in database or exam name mismatch.' }); 
         }
-        // --------------------------------------------------------------------------
+        
+        // Send Email after successful DB update (New Requirement)
+        sendCompletionEmail(email, examFullName, score);
         
         console.log(`[DB SUCCESS] Score saved for ${email}. Rows affected: ${this.changes}`);
         res.status(200).json({ message: 'Exam submitted!', score: score });

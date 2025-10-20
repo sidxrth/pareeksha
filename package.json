@@ -1,18 +1,45 @@
 {
   "name": "electron-signup-app",
   "version": "1.0.0",
-  "description": "A user signup app with a backend.",
+  "description": "An exam learning platform.",
+  "author": "Your Name",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "dependencies": {
     "@google/generative-ai": "^0.14.1",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "electron": "^25.0.0",
     "express": "^4.18.2",
     "nodemailer": "^6.9.5",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "productName": "ElectronSignupApp",
+    "appId": "com.yourcompany.electronsignupapp",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png"
+    }
   }
 }

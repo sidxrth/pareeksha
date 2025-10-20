@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Teacher Account - Pareeksha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+        .form-container { background-color: #ffffff; border-radius: 12px; padding: 2.5rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); border: 1px solid #e2e8f0; }
+        .form-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e0; border-radius: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease; font-size: 1rem; }
+        .form-input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
+        .btn { padding: 0.75rem 1.5rem; text-decoration: none; display: inline-block; transition: all 0.2s ease; font-size: 1rem; font-weight: 600; width: 100%; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-primary { background-color: #3182ce; color: #ffffff; }
+        .btn-primary:hover:not(:disabled) { background-color: #2b6cb0; }
+        .btn-primary:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        .btn-secondary { background-color: #e2e8f0; color: #2d3748; }
+        .btn-secondary:hover { background-color: #cbd5e0; }
+        .header h1 { font-size: 2rem; font-weight: 700; color: #2c5282; }
+        .form-step { display: none; }
+        .form-step.active { display: block; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="form-container w-full max-w-md">
+        <header class="header text-center mb-6">
+            <h1>Create Your Account</h1>
+            <p id="status-message" class="text-center text-sm mt-2 h-5 transition-colors duration-300"></p>
+        </header>
+
+        <form id="signup-form" class="space-y-4">
+            <div id="step-1" class="form-step active">
+                <label for="email" class="block mb-2 font-medium text-gray-600">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="teacher@example.com" required>
+                <button type="button" id="next-to-step-2" class="btn btn-primary !mt-6">Next</button>
+            </div>
+
+            <div id="step-2" class="form-step">
+                 <div class="flex justify-between items-center mb-4">
+                    <button type="button" id="back-to-step-1" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Back</button>
+                </div>
+                <label for="password" class="block mb-2 font-medium text-gray-600">Password</label>
+                 <div class="relative">
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
+                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                        <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-1.563 3.029m0 0l-2.145-2.145" /></svg>
+                    </button>
+                </div>
+                <label for="confirm-password" class="block mb-2 mt-4 font-medium text-gray-600">Confirm Password</label>
+                <input type="password" id="confirm-password" class="form-input" placeholder="••••••••" required>
+                <button type="button" id="next-to-step-3" class="btn btn-primary !mt-6">Next</button>
+            </div>
+
+            <div id="step-3" class="form-step">
+                <div class="flex justify-between items-center mb-4">
+                    <button type="button" id="back-to-step-2" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Back</button>
+                </div>
+                <label for="name" class="block mb-2 font-medium text-gray-600">Full Name</label>
+                <input type="text" id="name" class="form-input" placeholder="e.g., Jane Doe" required>
+                <button type="button" id="next-to-step-4" class="btn btn-primary !mt-6">Next</button>
+            </div>
+            
+            <div id="step-4" class="form-step">
+                 <div class="flex justify-between items-center mb-4">
+                    <button type="button" id="back-to-step-3" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Back</button>
+                </div>
+                <div class="flex justify-center mb-4 rounded-lg p-1 bg-gray-200">
+                    <button type="button" id="work-toggle" class="w-1/2 py-2 text-sm font-semibold rounded-md bg-white text-blue-600">Work</button>
+                    <button type="button" id="institution-toggle" class="w-1/2 py-2 text-sm font-semibold text-gray-600">Institution</button>
+                </div>
+
+                <div id="work-fields">
+                    <label for="company" class="block mb-2 font-medium text-gray-600">Company</label>
+                    <input type="text" id="company" class="form-input mb-4" placeholder="e.g., Acme Corp">
+                    <label for="work-location" class="block mb-2 font-medium text-gray-600">Location</label>
+                    <input type="text" id="work-location" class="form-input" placeholder="e.g., New York, NY">
+                </div>
+
+                <div id="institution-fields" class="hidden">
+                    <label for="institution-name" class="block mb-2 font-medium text-gray-600">College/School</label>
+                    <input type="text" id="institution-name" class="form-input mb-4" placeholder="e.g., State University">
+                    <label for="institution-location" class="block mb-2 font-medium text-gray-600">Location</label>
+                    <input type="text" id="institution-location" class="form-input" placeholder="e.g., Springfield, IL">
+                </div>
+
+                <button type="submit" id="signup-btn" class="btn btn-primary !mt-6">Create Account</button>
+            </div>
+        </form>
+        <p class="text-center text-sm text-gray-600 mt-6">
+            Already have an account? <a href="./login.html" class="font-semibold text-blue-600 hover:underline">Log in here</a>.
+        </p>
+    </div>
+
+    <script type="module">
+        import { auth, db, appId, createUserWithEmailAndPassword, doc, setDoc } from '../firebase-init.js';
+
+        const signupForm = document.getElementById('signup-form');
+        const statusMessage = document.getElementById('status-message');
+        const signupBtn = document.getElementById('signup-btn');
+
+        const steps = {
+            '1': document.getElementById('step-1'),
+            '2': document.getElementById('step-2'),
+            '3': document.getElementById('step-3'),
+            '4': document.getElementById('step-4'),
+        };
+        
+        let signupData = { type: 'work' }; // Default type
+
+        function navigateTo(step) {
+            Object.values(steps).forEach(s => s.classList.remove('active'));
+            steps[step].classList.add('active');
+        }
+
+        // --- Navigation ---
+        document.getElementById('next-to-step-2').addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            if (email) { signupData.email = email; navigateTo('2'); } 
+            else { setStatus('Please enter a valid email.', 'red'); }
+        });
+        document.getElementById('back-to-step-1').addEventListener('click', () => navigateTo('1'));
+
+        document.getElementById('next-to-step-3').addEventListener('click', () => {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            if (password.length < 6) { setStatus('Password must be at least 6 characters.', 'red'); return; }
+            if (password !== confirmPassword) { setStatus('Passwords do not match.', 'red'); return; }
+            signupData.password = password;
+            navigateTo('3');
+        });
+        document.getElementById('back-to-step-2').addEventListener('click', () => navigateTo('2'));
+
+        document.getElementById('next-to-step-4').addEventListener('click', () => {
+            const name = document.getElementById('name').value;
+            if (name) { signupData.name = name; navigateTo('4'); }
+            else { setStatus('Please enter your full name.', 'red'); }
+        });
+        document.getElementById('back-to-step-3').addEventListener('click', () => navigateTo('3'));
+
+        // --- Step 4 Toggles ---
+        const workToggle = document.getElementById('work-toggle');
+        const institutionToggle = document.getElementById('institution-toggle');
+        workToggle.addEventListener('click', () => {
+            signupData.type = 'work';
+            workToggle.className = 'w-1/2 py-2 text-sm font-semibold rounded-md bg-white text-blue-600';
+            institutionToggle.className = 'w-1/2 py-2 text-sm font-semibold text-gray-600';
+            document.getElementById('work-fields').classList.remove('hidden');
+            document.getElementById('institution-fields').classList.add('hidden');
+        });
+        institutionToggle.addEventListener('click', () => {
+            signupData.type = 'institution';
+            institutionToggle.className = 'w-1/2 py-2 text-sm font-semibold rounded-md bg-white text-blue-600';
+            workToggle.className = 'w-1/2 py-2 text-sm font-semibold text-gray-600';
+            document.getElementById('institution-fields').classList.remove('hidden');
+            document.getElementById('work-fields').classList.add('hidden');
+        });
+        
+        // --- Password Visibility ---
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        togglePasswordBtn.addEventListener('click', () => {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            document.getElementById('eye-open').classList.toggle('hidden');
+            document.getElementById('eye-closed').classList.toggle('hidden');
+        });
+
+        // --- Form Submission ---
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            signupBtn.disabled = true;
+            setStatus('Creating account...', 'gray');
+
+            // Collect data from the final step
+            if (signupData.type === 'work') {
+                signupData.company = document.getElementById('company').value;
+                signupData.location = document.getElementById('work-location').value;
+            } else {
+                signupData.institution = document.getElementById('institution-name').value;
+                signupData.location = document.getElementById('institution-location').value;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
+                const user = userCredential.user;
+
+                const teacherDocRef = doc(db, `/artifacts/${appId}/teachers/${user.uid}`);
+                await setDoc(teacherDocRef, {
+                    name: signupData.name,
+                    email: user.email,
+                    type: signupData.type,
+                    company: signupData.company || null,
+                    institution: signupData.institution || null,
+                    location: signupData.location || null,
+                    createdAt: new Date()
+                });
+
+                setStatus('Account created successfully! Redirecting...', 'green');
+                setTimeout(() => { window.location.href = './login.html'; }, 2000);
+
+            } catch (error) {
+                setStatus(error.message, 'red');
+                signupBtn.disabled = false;
+            }
+        });
+        
+        function setStatus(message, color) {
+            statusMessage.textContent = message;
+            statusMessage.className = `text-center text-sm mt-2 h-5 text-${color}-600`;
+        }
+    </script>
+</body>
+</html>

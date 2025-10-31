@@ -180,18 +180,21 @@
     const successModal = document.getElementById('successModal');
     const redirectMessage = document.getElementById('redirect-message');
 
+    // --- MODIFICATION: Read 'id' from URL params and validate for it ---
     const urlParams = new URLSearchParams(window.location.search);
     const userEmail = urlParams.get('email');
     const examName = urlParams.get('exam');
+    const examId = urlParams.get('id'); // <-- NEW
     let scanInterval = null;
     let isProcessing = false;
 
-    if (!userEmail || !examName) {
-        instruction.textContent = 'ERROR: Missing user or exam details.';
+    if (!userEmail || !examName || !examId) {
+        instruction.textContent = 'ERROR: Missing user, exam details, or exam ID.';
         scanStatus.textContent = 'FATAL ERROR';
     } else {
         instruction.innerHTML = `Registering for <strong>${userEmail}</strong>. <br>Move your face to the circle and look at the camera.`;
     }
+    // --- END MODIFICATION ---
 
     Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri('./models'),
@@ -215,7 +218,7 @@
     }
 
     function startAutomaticScan() {
-        if (!userEmail || !examName) return;
+        if (!userEmail || !examName || !examId) return;
         
         scanInterval = setInterval(async () => {
             if (isProcessing) return;
@@ -255,8 +258,8 @@
                 redirectMessage.textContent = `Redirecting to ${examTitle} Instructions...`; // MODIFIED TEXT
 
                 setTimeout(() => {
-                    // *** CRITICAL MODIFICATION: Redirect to the new instructions page ***
-                    window.location.href = `exam_instructions.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(examName)}`;
+                    // *** CRITICAL MODIFICATION: Redirect to the new instructions page, including the ID ***
+                    window.location.href = `exam_instructions.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(examName)}&id=${encodeURIComponent(examId)}`;
                 }, 3000); 
 
             } catch (error) {

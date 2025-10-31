@@ -207,42 +207,59 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const userEmail = urlParams.get('email');
-        const examSlug = urlParams.get('exam'); // e.g., 'c'
+        const examTypeSlug = urlParams.get('exam'); // Renamed to keep the current URL variable clean
+        const examId = urlParams.get('id'); // <-- NEW: Read exam ID
         const acceptButton = document.getElementById('accept-button');
         const examTitleEl = document.getElementById('exam-title');
         const userInfoEl = document.getElementById('user-info');
 
-        // Map slugs to full names
+        // Map generic slugs to a display name for instructions
         const examNames = {
-            'c': 'C Programming',
-            'python': 'Python',
-            'java': 'Java',
-            'c++': 'C++',
-            'cloud': 'Cloud Computing'
+            'program': 'Programming Exam',
+            'mcq': 'Multiple Choice Exam',
+            'theory': 'Theory Exam',
         };
         
-        const examFullName = examNames[examSlug] || "Unknown Exam";
+        // --- MODIFICATION: Corrected File Map for dynamic loading and added slug mapping ---
+        // 'exam.html' is the dynamic page and is a sibling file.
+        const fileMap = {
+            'program': 'exam/exam.html', 
+            'mcq': 'exam/MCQ.html', 
+            'theory': 'exam/theory.html',
+            // Added explicit mappings for clarity, although 'program' works for all coding types
+            'c': 'exam.html',
+            'java': 'exam.html',
+            'python': 'exam.html',
+        };
+        // --- END MODIFICATION ---
+        
+        const examFullName = examNames[examTypeSlug] || "Unknown Exam";
         
         // --- INITIAL SETUP ---
-        if (!userEmail || !examSlug) {
+        // --- MODIFICATION: Validate for missing examId ---
+        if (!userEmail || !examTypeSlug || !fileMap[examTypeSlug] || !examId) {
             examTitleEl.textContent = 'Error Loading Exam';
-            userInfoEl.innerHTML = '<strong>ERROR:</strong> Missing user or exam details in URL.';
+            userInfoEl.innerHTML = '<strong>ERROR:</strong> Missing user or invalid exam type/ID.';
             acceptButton.disabled = true;
             acceptButton.textContent = 'Cannot Continue';
-            acceptButton.style.backgroundColor = '#a0aec0'; // Muted grey for disabled
+            acceptButton.style.backgroundColor = '#a0aec0'; 
         } else {
             examTitleEl.textContent = `${examFullName} Instructions`;
             userInfoEl.innerHTML = `Logged in as: <strong>${userEmail}</strong>`;
         }
+        // --- END MODIFICATION ---
 
         // --- NAVIGATION LOGIC ---
         acceptButton.addEventListener('click', () => {
             if (acceptButton.disabled) return;
             
-            // Redirect to the actual exam page, preserving the user and exam context
-            // Assumes the exam files are like 'c_exam.html', 'python_exam.html' etc.
-            const examFileName = `${examSlug}_exam.html`;
-            window.location.href = `./exam/${examFileName}?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(examSlug)}`;
+            // Get the file name from the map
+            const examFileName = fileMap[examTypeSlug];
+
+            // --- MODIFICATION: Rename slug to 'examType' and pass 'id' ---
+            // The dynamic page exam.html expects 'examType' (slug) and 'id' (Firebase ID).
+            window.location.href = `./${examFileName}?email=${encodeURIComponent(userEmail)}&examType=${encodeURIComponent(examTypeSlug)}&id=${encodeURIComponent(examId)}`;
+            // --- END MODIFICATION ---
         });
     </script>
 </body>

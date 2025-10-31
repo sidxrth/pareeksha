@@ -95,7 +95,12 @@ completeSignupBtn.addEventListener('click', async () => {
     const userName = signupNameInput.value;
     const userCity = signupCityInput.value;
     const userEmail = signupEmailInput.value;
-    const exam = new URLSearchParams(window.location.search).get('exam');
+    
+    // --- MODIFICATION: Read the 'exam' and 'id' parameter from the URL ---
+    const urlParams = new URLSearchParams(window.location.search); 
+    const exam = urlParams.get('exam'); // examTypeSlug
+    const examId = urlParams.get('id'); // <-- NEW
+    // --- END MODIFICATION ---
 
     if (!userName || !userCity) {
         updateStatus('ERROR: Full Name and Living City are required.', true);
@@ -117,9 +122,11 @@ completeSignupBtn.addEventListener('click', async () => {
         signupNameInput.disabled = true;
         signupCityInput.disabled = true;
 
-        // Redirect to face setup page after a delay, carrying the exam name forward
+        // Redirect to face setup page after a delay, carrying the exam type slug AND the exam ID
         setTimeout(() => {
-            window.location.href = `../face.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(exam)}`;
+            // --- MODIFICATION: Pass the exam ID (`id`) in the URL ---
+            window.location.href = `../face.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(exam)}&id=${encodeURIComponent(examId)}`; 
+            // --- END MODIFICATION ---
         }, 2000);
 
     } catch (error) {

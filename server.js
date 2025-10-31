@@ -152,39 +152,62 @@ app.get('/get-all-face-data', (req, res) => {
 
 // --- EXAM SUBMISSION & SCORING ---
 app.post('/submit-exam', async (req, res) => {
-    const { email, exam, code, timeRemaining, isCorrect } = req.body;
+    // --- MODIFICATION: Receive the new submittedQuestion object ---
+    const { email, exam, userCode, timeRemaining, isCorrect, submittedQuestion } = req.body;
     let score = 0;
 
-    // Determine the full name of the exam for the email (based on index.html)
-    const examFullName = exam === 'c' ? 'C Programming' : 
-                         exam === 'python' ? 'Python' :
-                         exam === 'java' ? 'Java' : exam === 'c++' ? 'C++' : 
-                         exam === 'cloud' ? 'Cloud Computing' : exam;
+    // FIX: Map the generic exam slug to a user-friendly name
+    const examFullName = exam === 'program' ? 'Programming Exam' : 
+                         exam === 'mcq' ? 'Multiple Choice Exam' :
+                         exam === 'theory' ? 'Theory Exam' : submittedQuestion?.title || 'Unknown Exam';
 
+    // 1. Scoring Logic: Award 50 if client-side check passed AND time remains.
     if (isCorrect && timeRemaining > 0) {
         score = 50;
     } else {
+        // 2. AI Evaluation Logic for partial/incorrect scores
         try {
-            // FIX: Changed model name to gemini-2.5-flash
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
+            
+            // Construct a detailed prompt for Gemini
             const prompt = `
-                The following code was submitted for an exam problem. 
-                The problem was to find the duplicate number in an array.
-                The user's code is:
-                \`\`\`${code}\`\`\`
-                The user's output was incorrect or they ran out of time. 
-                Please analyze the code for correctness, efficiency, and logic.
-                Provide a score out of 50. Your response should be a single number.
+                You are an automated grading system. Evaluate the student's submitted code against the provided programming question.
+                
+                The maximum score is 50.
+                
+                --- QUESTION DETAILS ---
+                Title: ${submittedQuestion.title}
+                Description: ${submittedQuestion.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ')}
+                Language: ${exam}
+                
+                --- SUBMITTED CODE ---
+                \`\`\`${exam === 'c' ? 'c' : exam}\n${userCode}\n\`\`\`
+
+                --- EVALUATION CRITERIA ---
+                1. Correctness: Does the code solve the problem? (40% weight)
+                2. Logic/Algorithm: Is the approach sound, even if incomplete? (40% weight)
+                3. Readability/Structure: Is the code well-organized and commented? (20% weight)
+
+                Assign a final score from 0 to 49. A score of 50 is reserved for perfectly correct and optimal solutions.
+                The student failed the single automated test case on the client side.
+                
+                Provide ONLY the final score as a single integer number. DO NOT include any text, reasoning, or markdown formatting (e.g., no asterisks, no quotes, no code blocks, just the number).
             `;
+            
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const text = await response.text();
-            score = parseInt(text, 10) || 0; // Default to 0 if parsing fails
+            const text = response.text.trim();
+            
+            // Extract the score, ensuring it's an integer between 0 and 49 (inclusive)
+            const parsedScore = parseInt(text, 10);
+            score = isNaN(parsedScore) ? 1 : Math.min(49, Math.max(0, parsedScore)); 
+
         } catch (error) {
             console.error("Gemini API Error:", error);
-            score = 10; // Assign a default low score if AI fails
+            score = 1; // Assign a minimum score if AI fails
         }
     }
+    // --- END MODIFICATION ---
 
     const sql = `UPDATE users SET score = ? WHERE email = ? AND exam = ?`;
     

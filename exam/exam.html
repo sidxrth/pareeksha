@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title id="page-title">Pareeksha - Programming Exam</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+    
+    <script src="../face-api.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script type="module" src="../firebase-init.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --primary-accent: #334155;
+            --primary-accent-hover: #1e293b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+
+        /* --- Header --- */
+        .header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        .header-title { font-size: 1.25rem; font-weight: 600; }
+        .timer-box {
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: background-color 0.5s ease;
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 6.5rem 2rem 2rem;
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .grid-layout { grid-template-columns: repeat(5, 1fr); }
+            .problem-section { grid-column: span 2; }
+            .editor-section { grid-column: span 3; }
+        }
+        .io-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .io-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* MODIFIED: Camera View Box */
+        .fixed-camera-view {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 180px;
+            height: 135px;
+            background-color: #111827;
+            border: 3px solid transparent; 
+            border-radius: 0.75rem;
+            z-index: 50;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        /* NEW: Proctoring Status Section */
+        #proctor-section {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 60;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+        .status-ok { color: #10b981; } 
+        .status-warn { color: #f59e0b; } 
+        .status-alert { color: #ef4444; } 
+        
+        #live-status { /* In-camera status display */
+            position: absolute; 
+            top: 8px; 
+            left: 8px; 
+            background-color: #a0aec0; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 0.8rem; 
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* --- Components --- */
+        .card {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .card.highlight {
+            border-left: 5px solid var(--primary-accent);
+        }
+        .compile-btn, .finish-btn {
+            width: 100%;
+            background-color: var(--primary-accent);
+            color: white;
+            font-weight: 600;
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: background-color 0.2s ease;
+        }
+        .compile-btn:hover:not(:disabled) {
+            background-color: var(--primary-accent-hover);
+        }
+        .compile-btn:disabled, .finish-btn:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+             box-shadow: none;
+        }
+        .finish-btn {
+            background-color: #c53030;
+        }
+        .finish-btn:hover:not(:disabled) {
+            background-color: #9b2c2c;
+        }
+        .header .finish-btn {
+            width: auto;
+            margin-top: 0;
+            padding: 0.5rem 1rem;
+        }
+
+        .terminal {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            padding: 1rem;
+            border-radius: 8px;
+            min-height: 120px;
+            border: 1px solid #334155;
+            white-space: pre-wrap;
+        }
+        
+        /* Specific Styles */
+        .problem-description p, .problem-description ul { margin-bottom: 1rem; }
+        .example-box {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        .CodeMirror {
+            border: 1px solid var(--border-color);
+            height: 400px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+        /* Modal for Malpractice */
+        .malpractice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 700;
+            z-index: 1000;
+        }
+
+        /* Submission Buffer Modal */
+        .submission-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 500;
+            z-index: 1001;
+            transition: opacity 0.3s ease;
+        }
+        .submission-overlay h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="malpractice-modal" class="malpractice-modal">
+        MALPRACTICE DETECTED!
+        <div id="malpractice-reason" class="text-xl font-normal mt-4"></div>
+        <div class="text-xl font-normal mt-4">Redirecting in 5 seconds...</div>
+    </div>
+
+    <div id="submission-overlay" class="submission-overlay">
+        <h3>Submitting Exam...</h3>
+        <div class="loading-spinner"></div>
+        <div id="submission-status">Initializing submission.</div>
+    </div>
+
+    <header class="header">
+        <div class="header-title" id="exam-title-header">Programming Challenge</div>
+        <div class="header-controls">
+            <button id="finish-btn" class="finish-btn" disabled>Finish Exam</button>
+            <div class="timer-box" id="timer">--:--</div>
+        </div>
+    </header>
+
+    <div class="fixed-camera-view" id="camera-container">
+        <video id="camera-feed" autoplay muted></video>
+        <div id="live-status">Loading...</div>
+    </div>
+    
+    <div id="proctor-section" class="status-ok">Proctoring: Initializing...</div>
+
+    <div class="container">
+        <div class="grid-layout">
+            
+            <div class="problem-section card highlight">
+                <h2 id="question-title">Loading Question...</h2>
+                <div id="problem-description" class="problem-description">
+                    <p>Fetching problem details from the server. Please wait...</p>
+                </div>
+                <div class="example-box">
+                    <p><strong>Test Case Input:</strong></p>
+                    <pre id="test-case-input-display">Loading test input...</pre>
+                    <p class="mt-4"><strong>Expected Output:</strong></p>
+                    <pre id="test-case-output-display">Loading expected output...</pre>
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <div class="card">
+                    <h3>Your Solution (Language: <span id="language-display"></span>)</h3>
+                    <textarea id="code-editor"></textarea>
+                </div>
+                
+                <button id="compile-btn" class="compile-btn" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.25rem; height: 1.25rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                    </svg>
+                    Compile & Run (Simulated)
+                </button>
+                <div class="io-grid">
+                    <div class="card" style="grid-column: span 2;">
+                        <h3>Simulation Console</h3>
+                        <pre id="output-terminal" class="terminal">Initializing...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="user-email" value="">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script type="module">
+        import { db, doc, getDoc, collection, getDocs, query, orderBy } from '../firebase-init.js'; 
+
+        const editorArea = document.getElementById('code-editor');
+        let editor = null; 
+
+        // --- DOM Elements ---
+        const userEmailInput = document.getElementById('user-email');
+        const cameraFeed = document.getElementById('camera-feed');
+        const cameraContainer = document.getElementById('camera-container');
+        const proctorSection = document.getElementById('proctor-section');
+        const finishBtn = document.getElementById('finish-btn');
+        const compileBtn = document.getElementById('compile-btn');
+        const timerEl = document.getElementById('timer');
+        const outputTerminal = document.getElementById('output-terminal');
+        const liveStatusDiv = document.getElementById('live-status');
+
+        // Question Details
+        const questionTitleEl = document.getElementById('question-title');
+        const problemDescriptionEl = document.getElementById('problem-description');
+        const testCaseInputEl = document.getElementById('test-case-input-display');
+        const testCaseOutputEl = document.getElementById('test-case-output-display');
+        const examTitleHeader = document.getElementById('exam-title-header');
+        const languageDisplay = document.getElementById('language-display');
+
+        // Submission elements
+        const submissionOverlay = document.getElementById('submission-overlay');
+        const submissionStatus = document.getElementById('submission-status');
+
+        // --- GLOBAL STATE VARIABLES ---
+        let userEmail = '';
+        let examTypeSlug = ''; 
+        let examId = '';       
+        let language = 'clike'; // Default CodeMirror mode
+        
+        let faceMatcher = null; 
+        let proctorViolationSeconds = 0;
+        let proctorInterval = null;
+        let isExamFinished = false; 
+        
+        let timerInterval = null; 
+        let timeLeft = 0; 
+        let initialTime = 0;
+        
+        let isCorrect = false;
+        let correctOutput = ''; 
+        let testInputData = ''; 
+        
+        // --- Variables to store question text for AI submission ---
+        let questionTitle = '';
+        let questionDescription = '';
+        // --- END NEW ---
+
+        const REDIRECT_URL = '../../index.html';
+        const MAX_VIOLATION_SECONDS = 15;
+        const FACE_MATCH_THRESHOLD = 0.6; 
+        
+        // --- CodeMirror Initialization Function ---
+        function setupCodeMirror(initialValue, codeLanguage) {
+            // Map common language strings to CodeMirror modes
+            const modeMap = {
+                'C': 'text/x-csrc',
+                'Java': 'text/x-java',
+                'Python': 'python',
+                'JavaScript': 'javascript',
+                // Add more mappings as needed
+            };
+
+            const mode = modeMap[codeLanguage] || 'text/x-csrc';
+
+            if (editor) editor.toTextArea();
+
+            editor = CodeMirror.fromTextArea(editorArea, {
+                lineNumbers: true,
+                mode: mode,
+                theme: "material-darker",
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                value: initialValue || "// Start coding here..."
+            });
+            language = mode; // Update global language variable for compilation check
+        }
+
+        // --- DATA FETCHING (Primary Initialization Step) ---
+        async function fetchExamData() {
+            outputTerminal.textContent = "Fetching exam details from Firebase...";
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            userEmail = urlParams.get('email');
+            examTypeSlug = urlParams.get('examType'); 
+            examId = urlParams.get('id'); 
+
+            if (!examId || !userEmail) {
+                 outputTerminal.style.color = '#c53030';
+                 outputTerminal.textContent = "CRITICAL ERROR: Missing Exam ID or User Email in URL. Cannot proceed.";
+                 return;
+            }
+
+            try {
+                // 1. Fetch the main exam document to get duration
+                const examRef = doc(db, 'exams', examId);
+                const examSnap = await getDoc(examRef);
+
+                if (!examSnap.exists()) {
+                    throw new Error(`Exam ID ${examId} not found in Firebase.`);
+                }
+
+                const examData = examSnap.data();
+                const totalMinutes = examData.duration?.totalMinutes || 30; // Default to 30 mins
+                
+                // 2. Fetch the question(s) (Assuming only one is needed/used)
+                const questionsRef = collection(db, `exams/${examId}/questions`);
+                const questionsQuery = query(questionsRef, orderBy('createdAt', 'asc')); 
+                const questionsSnap = await getDocs(questionsQuery);
+
+                if (questionsSnap.empty) {
+                    throw new Error("No questions found for this exam.");
+                }
+                
+                const questionDoc = questionsSnap.docs[0];
+                const qData = questionDoc.data();
+                
+                // --- UPDATE UI AND STORE QUESTION TEXT ---
+                questionTitle = qData.title || "Untitled Question"; // Store Globally
+                questionDescription = qData.description || "<p>No description provided.</p>"; // Store Globally
+
+                questionTitleEl.textContent = questionTitle;
+                problemDescriptionEl.innerHTML = questionDescription.replace(/\n/g, '<br>');
+
+                examTitleHeader.textContent = examData.examName || "Programming Challenge";
+                document.getElementById('page-title').textContent = `${examData.examName || 'Exam'} - Pareeksha`;
+                
+                // Setup CodeMirror dynamically
+                setupCodeMirror(qData.templateCode || `// Write your ${qData.language || 'C'} code here\n`, qData.language); 
+                languageDisplay.textContent = qData.language || 'C';
+
+                // Extract test case data (Assuming the first test case is the one shown)
+                const testCase = qData.testCases?.[0];
+                if (testCase) {
+                    testInputData = testCase.input;
+                    correctOutput = testCase.expectedOutput;
+                    testCaseInputEl.textContent = testInputData;
+                    testCaseOutputEl.textContent = correctOutput;
+                } else {
+                    testInputData = 'N/A (No test input)';
+                    correctOutput = 'N/A (No expected output)';
+                    testCaseInputEl.textContent = 'No test input provided by instructor.';
+                    testCaseOutputEl.textContent = 'No expected output provided by instructor.';
+                }
+
+                // Initialize Timer
+                timeLeft = totalMinutes * 60;
+                initialTime = timeLeft;
+                timerEl.textContent = `${totalMinutes.toString().padStart(2, '0')}:00`;
+                
+                // Enable controls
+                compileBtn.disabled = false;
+                finishBtn.disabled = false;
+                outputTerminal.textContent = "Exam environment ready. Start coding!";
+                
+                // Proceed to load proctoring models and start the loop
+                initProctoring();
+
+            } catch (error) {
+                console.error("CRITICAL Data Fetching Error:", error);
+                outputTerminal.style.color = '#c53030';
+                outputTerminal.textContent = `CRITICAL ERROR: Failed to load exam data. ${error.message}`;
+                questionTitleEl.textContent = "Error Loading Exam";
+                compileBtn.disabled = true;
+                finishBtn.disabled = true;
+                timerEl.textContent = "--:--";
+            }
+        }
+        
+        // --- PROCTORING & TIMER LOGIC (Unchanged) ---
+        
+        function handleFullScreenChange() {
+            if (!document.fullscreenElement && !isExamFinished) {
+                malpracticeEnforcement("Exited Full-Screen Mode. Exam is terminated.");
+            }
+        }
+
+        function handleBeforeUnload(e) {
+            if (!isExamFinished) {
+                e.preventDefault();
+                e.returnValue = 'WARNING! Exiting the exam page without clicking "Finish Exam" will be logged as a proctoring violation and may invalidate your attempt.';
+                return 'WARNING! Exiting the exam page without clicking "Finish Exam" will be logged as a proctoring violation and may invalidate your attempt.';
+            }
+        }
+
+        async function initProctoring() {
+            try {
+                if (!userEmail) return;
+
+                proctorSection.textContent = "Proctoring: Loading models...";
+                liveStatusDiv.textContent = "Loading...";
+
+                // Paths adjusted for location in /exam directory
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri('../models'),
+                    faceapi.nets.tinyFaceDetector.loadFromUri('../models'), 
+                    faceapi.nets.faceRecognitionNet.loadFromUri('../models'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('../models'),
+                    faceapi.nets.ageGenderNet.loadFromUri('../models'), 
+                    faceapi.nets.faceExpressionNet.loadFromUri('../models') 
+                ]);
+
+                proctorSection.textContent = "Proctoring: Fetching profile...";
+                const response = await fetch(`http://localhost:3000/get-user-face-data?email=${encodeURIComponent(userEmail)}`);
+                
+                if (!response.ok) {
+                    const errorJson = await response.json().catch(() => ({ message: `HTTP Error ${response.status}` }));
+                    throw new Error(errorJson.message || `Server failed to fetch profile: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.face_descriptor) {
+                    throw new Error('User face data found but descriptor is empty. Please enroll again.');
+                }
+                
+                const faceDescriptor = JSON.parse(data.face_descriptor);
+                
+                const labeledDescriptors = new faceapi.LabeledFaceDescriptors(
+                    userEmail, 
+                    faceDescriptor.map(d => new Float32Array(d))
+                );
+                faceMatcher = new faceapi.FaceMatcher([labeledDescriptors], FACE_MATCH_THRESHOLD);
+                
+                startCameraAndTimer();
+
+            } catch (err) {
+                console.error("CRITICAL PROCTORING SETUP FAILURE:", err);
+                malpracticeEnforcement(`Proctoring setup failed: ${err.message}.`, true);
+            }
+        }
+
+        async function startCameraAndTimer() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraFeed.srcObject = stream;
+                
+                cameraFeed.addEventListener('loadeddata', () => {
+                    proctorSection.textContent = "Proctoring: Active";
+                    proctorSection.className = 'status-ok';
+                    proctorInterval = setInterval(proctorLoop, 500);
+                    if (initialTime > 0) startTimerLogic(); 
+                });
+            } catch (err) {
+                console.error("Camera Access Denied:", err);
+                malpracticeEnforcement("Camera access denied. Cannot proceed with the exam.", true);
+            }
+        }
+        
+        async function proctorLoop() {
+            if (!faceMatcher || isExamFinished) return;
+
+            let violation = false;
+            let violationReason = "";
+            let detectionOptions = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 });
+            
+            const fullDetections = await faceapi.detectAllFaces(cameraFeed, detectionOptions)
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+
+            
+            if (!fullDetections || fullDetections.length === 0) { 
+                violation = true;
+                violationReason = "NO FACE DETECTED in camera view. (Code: 1)";
+            } else if (fullDetections.length > 1) {
+                violation = true;
+                violationReason = `MULTIPLE FACES (${fullDetections.length}) detected. (Code: 2)`;
+            } else { 
+                const bestMatch = faceMatcher.findBestMatch(fullDetections[0].descriptor);
+                
+                if (bestMatch.label !== userEmail) {
+                    violation = true;
+                    violationReason = `UNAUTHORIZED FACE detected. (Code: 3)`;
+                } else {
+                    proctorViolationSeconds = Math.max(0, proctorViolationSeconds - 0.5); 
+                    
+                    liveStatusDiv.style.backgroundColor = '#10b981'; 
+                    liveStatusDiv.textContent = 'LIVE';
+                    cameraContainer.style.borderColor = '#10b981'; 
+                    proctorSection.textContent = "Proctoring: Face Verified (OK)";
+                    proctorSection.className = 'status-ok'; 
+                }
+            }
+            
+            if (violation) {
+                proctorViolationSeconds += 0.5; 
+                
+                liveStatusDiv.style.backgroundColor = '#ef4444'; 
+                liveStatusDiv.textContent = 'WARNING';
+                cameraContainer.style.borderColor = '#ef4444'; 
+                
+                proctorSection.textContent = `WARNING: ${violationReason} (${Math.ceil(proctorViolationSeconds)}/${MAX_VIOLATION_SECONDS}s)`;
+                proctorSection.className = 'status-alert'; 
+            }
+
+            if (proctorViolationSeconds >= MAX_VIOLATION_SECONDS) {
+                malpracticeEnforcement(violationReason);
+            }
+        }
+
+        function malpracticeEnforcement(reason, isCriticalSetup = false) {
+            if (isExamFinished) return;
+            isExamFinished = true; 
+
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+
+            clearInterval(timerInterval);
+            clearInterval(proctorInterval);
+            compileBtn.disabled = true;
+            finishBtn.disabled = true;
+
+            try {
+                if (cameraFeed.srcObject && cameraFeed.srcObject.getTracks) {
+                    cameraFeed.srcObject.getTracks().forEach(track => track.stop());
+                }
+            } catch (e) {
+                console.error("Could not stop camera tracks:", e);
+            }
+            
+            if (window.electronAPI && window.electronAPI.exitFullScreen) {
+                window.electronAPI.exitFullScreen();
+            }
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+
+            const alertMessage = isCriticalSetup 
+                ? `CRITICAL ERROR: Exam policy not followed (Setup Failure).\nReason: ${reason}`
+                : `EXAM TERMINATED: Exam policy not followed. Your exam is now locked.\nReason: ${reason}\n\nPress OK to be redirected.`;
+
+            alert(alertMessage); 
+
+            window.location.href = REDIRECT_URL;
+        }
+        
+        function startTimerLogic() {
+            const colors = ["#22c55e", "#16a34a", "#15803d", "#166534", "#14532d", "#ef4444"];
+            timerEl.style.backgroundColor = colors[0];
+            
+            timerInterval = setInterval(() => {
+                if (isExamFinished) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const seconds = (timeLeft % 60).toString().padStart(2, '0');
+                timerEl.textContent = `${minutes}:${seconds}`;
+
+                const timePassed = initialTime - timeLeft;
+                const colorIndex = Math.floor(timePassed / (5 * 60));
+
+                if (timeLeft <= 5 * 60 && timeLeft > 0) {
+                    timerEl.style.backgroundColor = colors[5]; 
+                } else if (timeLeft > 0) {
+                    timerEl.style.backgroundColor = colors[Math.min(colorIndex, colors.length - 2)];
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    malpracticeEnforcement("Time limit reached. Exam submission auto-locked.", true);
+                }
+            }, 1000);
+        }
+        
+        // --- EXAM SUBMISSION / COMPILATION LOGIC (FIXED) ---
+        
+        compileBtn.addEventListener('click', () => {
+            if (isExamFinished) return; 
+
+            const code = editor.getValue();
+            
+            outputTerminal.textContent = "Compiling...\n";
+            outputTerminal.style.color = '#90cdf4';
+            compileBtn.disabled = true;
+
+            // --- SYNTAX/STRUCTURE CHECK (Mimics a real compiler checking for basic structure) ---
+            let isCodeValid = true;
+            if (languageDisplay.textContent === 'C' && !code.includes("#include")) {
+                outputTerminal.textContent = "Compilation Error: Missing required header <stdio.h>.";
+                isCodeValid = false;
+            } else if (languageDisplay.textContent === 'Python' && !code.includes("class Solution")) {
+                outputTerminal.textContent = "Compilation Error: Missing required 'Solution' class structure.";
+                isCodeValid = false;
+            }
+            // --- END SYNTAX CHECK ---
+
+
+            if (!isCodeValid) {
+                outputTerminal.style.color = '#f56565';
+                compileBtn.disabled = false;
+                isCorrect = false; 
+                return;
+            }
+
+            setTimeout(() => {
+                try {
+                    
+                    const template = `// Write your ${languageDisplay.textContent || 'C'} code here\n`;
+                    const codeModified = code.trim() !== template.trim();
+
+                    if (!codeModified) {
+                        outputTerminal.style.color = '#f56565';
+                        outputTerminal.textContent = `Compilation successful.
+Execution failed: Cannot run default code template.
+Please write your solution.`;
+                        isCorrect = false;
+                        return;
+                    }
+                    
+                    // --- FINAL SIMULATION LOGIC: Enforce AI Grading for 1-49 Score ---
+                    // 1. Terminal Output: Show a successful compilation, the mock output, and the unverified status.
+                    // 2. isCorrect: Set to FALSE. This forces the server to use Gemini for an actual grade (1-49 marks).
+                    
+                    outputTerminal.style.color = '#f6e05e'; // Warning color for simulated pass
+                    outputTerminal.textContent = `Execution finished (Simulated).
+Simulated Input: ${testInputData}
+Simulated Output: ${correctOutput}
+
+VERIFICATION RESULT: **Cannot verify correctness in this environment.** Your score will be determined by the AI upon submission.`;
+                    isCorrect = false; 
+                    // --- END FINAL SIMULATION LOGIC ---
+
+                } catch (e) {
+                    outputTerminal.style.color = '#f56565';
+                    outputTerminal.textContent = `Runtime Error in Simulation: ${e.message}`;
+                    isCorrect = false;
+                } finally {
+                     compileBtn.disabled = false;
+                }
+            }, 1000);
+        });
+
+        finishBtn.addEventListener('click', async () => {
+            if (isExamFinished) return;
+
+            isExamFinished = true; 
+
+            submissionOverlay.style.display = 'flex';
+
+            clearInterval(timerInterval);
+            clearInterval(proctorInterval);
+            compileBtn.disabled = true;
+            finishBtn.disabled = true;
+
+            try {
+                if (cameraFeed.srcObject && cameraFeed.srcObject.getTracks) {
+                    cameraFeed.srcObject.getTracks().forEach(track => track.stop());
+                }
+            } catch (e) {
+                console.error("Could not stop camera tracks:", e);
+            }
+            
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+
+            const statusMessages = [
+                "Preparing your submission...",
+                "Checking your output...",
+                "Evaluating your answer...",
+                "Calculating your mark...",
+                "Verifying your email and records...",
+                "Finalizing submission..."
+            ];
+            const code = editor.getValue();
+            const email = userEmail; 
+            const exam = examTypeSlug;
+            
+            const submittedQuestion = {
+                title: questionTitle,
+                description: problemDescriptionEl.innerHTML, 
+                language: languageDisplay.textContent,
+                test_input: testInputData,
+                expected_output: correctOutput 
+            };
+
+            try {
+                const showStatus = async (message, delay = 500) => {
+                    submissionStatus.textContent = message;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                };
+
+                await showStatus(statusMessages[0]);
+                await showStatus(statusMessages[1], 800);
+                await showStatus(statusMessages[2], 800);
+                
+                await showStatus(statusMessages[3], 100);
+                const responsePromise = fetch('http://localhost:3000/submit-exam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email, 
+                        exam, 
+                        examFullName: examTitleHeader.textContent,
+                        userCode: code, 
+                        timeRemaining: timeLeft, 
+                        isCorrect, 
+                        submittedQuestion
+                    })
+                });
+
+                const [response] = await Promise.all([
+                    responsePromise,
+                    showStatus(statusMessages[4], 1500).then(() => showStatus(statusMessages[5], 1000))
+                ]);
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Server failed to process submission.');
+                }
+                
+                if (window.electronAPI && window.electronAPI.exitFullScreen) {
+                    window.electronAPI.exitFullScreen();
+                }
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+
+                submissionStatus.textContent = "Submission successful! Redirecting...";
+                setTimeout(() => {
+                    // Correct path to the completion page (located in the exam/ directory)
+                    window.location.href = `./exam/complete.html?score=${data.score}&exam=${exam}&email=${email}`;
+                }, 500); 
+
+            } catch (error) {
+                console.error("Submission Failure:", error);
+                submissionOverlay.style.display = 'none'; 
+                alert(`Submission Error: ${error.message}. Please try clicking 'Finish Exam' again.`);
+                
+                compileBtn.disabled = false;
+                finishBtn.disabled = false;
+                startTimerLogic(); 
+                proctorInterval = setInterval(proctorLoop, 500);
+                isExamFinished = false; 
+                window.addEventListener('beforeunload', handleBeforeUnload); 
+            }
+        });
+
+        // --- EXECUTION (Unchanged) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load required CodeMirror mode scripts once the structure is ready
+            const loadScript = (src) => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            };
+
+            // CRITICAL: Dynamically load CodeMirror mode files from CDN
+            Promise.all([
+                loadScript("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"),
+                loadScript("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js")
+            ]).then(fetchExamData).catch(error => {
+                console.error("Failed to load CodeMirror modes:", error);
+            });
+
+            if (window.electronAPI && window.electronAPI.enterFullScreen) {
+                window.electronAPI.enterFullScreen();
+            }
+
+            document.addEventListener('fullscreenchange', handleFullScreenChange);
+            window.addEventListener('beforeunload', handleBeforeUnload);
+        });
+    </script>

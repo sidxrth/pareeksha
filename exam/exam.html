@@ -38,6 +38,8 @@
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
+            /* Hide content until loading overlay is removed */
+            overflow: hidden; 
         }
 
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; }
@@ -270,9 +272,30 @@
             font-weight: 700;
             margin-bottom: 2rem;
         }
+
+        /* --- NEW LOADING OVERLAY STYLES --- */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Semi-transparent background (30% opacity) to obscure text */
+            background-color: rgba(240, 244, 248, 0.9); 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10000; /* Ensure it's above everything */
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
         .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #ffffff;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary-accent);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -286,6 +309,12 @@
     </style>
 </head>
 <body>
+    
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div id="loading-message">Setting up secure environment and fetching exam data...</div>
+        <div class="text-sm text-gray-500 mt-2">Please wait while models load (Camera access pending).</div>
+    </div>
     <div id="malpractice-modal" class="malpractice-modal">
         MALPRACTICE DETECTED!
         <div id="malpractice-reason" class="text-xl font-normal mt-4"></div>
@@ -369,6 +398,8 @@
         const timerEl = document.getElementById('timer');
         const outputTerminal = document.getElementById('output-terminal');
         const liveStatusDiv = document.getElementById('live-status');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessageDiv = document.getElementById('loading-message');
 
         // Question Details
         const questionTitleEl = document.getElementById('question-title');
@@ -412,13 +443,11 @@
         
         // --- CodeMirror Initialization Function ---
         function setupCodeMirror(initialValue, codeLanguage) {
-            // Map common language strings to CodeMirror modes
             const modeMap = {
                 'C': 'text/x-csrc',
                 'Java': 'text/x-java',
                 'Python': 'python',
                 'JavaScript': 'javascript',
-                // Add more mappings as needed
             };
 
             const mode = modeMap[codeLanguage] || 'text/x-csrc';
@@ -433,26 +462,24 @@
                 autoCloseBrackets: true,
                 value: initialValue || "// Start coding here..."
             });
-            language = mode; // Update global language variable for compilation check
+            language = mode; 
         }
 
         // --- DATA FETCHING (Primary Initialization Step) ---
         async function fetchExamData() {
-            outputTerminal.textContent = "Fetching exam details from Firebase...";
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            userEmail = urlParams.get('email');
-            examTypeSlug = urlParams.get('examType'); 
-            examId = urlParams.get('id'); 
-
-            if (!examId || !userEmail) {
-                 outputTerminal.style.color = '#c53030';
-                 outputTerminal.textContent = "CRITICAL ERROR: Missing Exam ID or User Email in URL. Cannot proceed.";
-                 return;
-            }
-
             try {
-                // 1. Fetch the main exam document to get duration
+                // 1. Fetch data from Firebase
+                const urlParams = new URLSearchParams(window.location.search);
+                userEmail = urlParams.get('email');
+                examTypeSlug = urlParams.get('examType'); 
+                examId = urlParams.get('id'); 
+
+                if (!examId || !userEmail) {
+                     throw new Error("Missing Exam ID or User Email in URL.");
+                }
+
+                loadingMessageDiv.textContent = "Fetching exam details...";
+
                 const examRef = doc(db, 'exams', examId);
                 const examSnap = await getDoc(examRef);
 
@@ -461,9 +488,16 @@
                 }
 
                 const examData = examSnap.data();
-                const totalMinutes = examData.duration?.totalMinutes || 30; // Default to 30 mins
                 
-                // 2. Fetch the question(s) (Assuming only one is needed/used)
+                // --- MODIFICATION: Fetch and enforce instructor's time ---
+                const fetchedMinutes = examData.duration?.totalMinutes;
+                
+                if (typeof fetchedMinutes !== 'number' || fetchedMinutes <= 0) {
+                    throw new Error("CRITICAL: Exam duration is missing or invalid in Firebase. Instructor must set time.");
+                }
+                const totalMinutes = fetchedMinutes;
+                // --- END MODIFICATION ---
+
                 const questionsRef = collection(db, `exams/${examId}/questions`);
                 const questionsQuery = query(questionsRef, orderBy('createdAt', 'asc')); 
                 const questionsSnap = await getDocs(questionsQuery);
@@ -472,24 +506,20 @@
                     throw new Error("No questions found for this exam.");
                 }
                 
-                const questionDoc = questionsSnap.docs[0];
-                const qData = questionDoc.data();
+                const qData = questionsSnap.docs[0].data();
                 
                 // --- UPDATE UI AND STORE QUESTION TEXT ---
-                questionTitle = qData.title || "Untitled Question"; // Store Globally
-                questionDescription = qData.description || "<p>No description provided.</p>"; // Store Globally
+                questionTitle = qData.title || "Untitled Question";
+                questionDescription = qData.description || "<p>No description provided.</p>";
 
                 questionTitleEl.textContent = questionTitle;
                 problemDescriptionEl.innerHTML = questionDescription.replace(/\n/g, '<br>');
-
                 examTitleHeader.textContent = examData.examName || "Programming Challenge";
                 document.getElementById('page-title').textContent = `${examData.examName || 'Exam'} - Pareeksha`;
                 
-                // Setup CodeMirror dynamically
                 setupCodeMirror(qData.templateCode || `// Write your ${qData.language || 'C'} code here\n`, qData.language); 
                 languageDisplay.textContent = qData.language || 'C';
 
-                // Extract test case data (Assuming the first test case is the one shown)
                 const testCase = qData.testCases?.[0];
                 if (testCase) {
                     testInputData = testCase.input;
@@ -503,21 +533,26 @@
                     testCaseOutputEl.textContent = 'No expected output provided by instructor.';
                 }
 
-                // Initialize Timer
                 timeLeft = totalMinutes * 60;
                 initialTime = timeLeft;
                 timerEl.textContent = `${totalMinutes.toString().padStart(2, '0')}:00`;
                 
-                // Enable controls
                 compileBtn.disabled = false;
                 finishBtn.disabled = false;
                 outputTerminal.textContent = "Exam environment ready. Start coding!";
                 
                 // Proceed to load proctoring models and start the loop
-                initProctoring();
+                await initProctoring();
 
             } catch (error) {
                 console.error("CRITICAL Data Fetching Error:", error);
+                loadingOverlay.style.backgroundColor = 'rgba(255, 0, 0, 0.9)';
+                loadingOverlay.style.color = 'white';
+                loadingOverlay.innerHTML = `
+                    <div class="text-2xl font-bold">CRITICAL SETUP ERROR</div>
+                    <div class="text-lg mt-2">${error.message || 'Failed to load exam data.'}</div>
+                    <div class="text-sm mt-4">Please contact support.</div>
+                `;
                 outputTerminal.style.color = '#c53030';
                 outputTerminal.textContent = `CRITICAL ERROR: Failed to load exam data. ${error.message}`;
                 questionTitleEl.textContent = "Error Loading Exam";
@@ -544,6 +579,7 @@
         }
 
         async function initProctoring() {
+            loadingMessageDiv.textContent = "Loading security models (Biometric Setup)...";
             try {
                 if (!userEmail) return;
 
@@ -560,6 +596,7 @@
                     faceapi.nets.faceExpressionNet.loadFromUri('../models') 
                 ]);
 
+                loadingMessageDiv.textContent = "Verifying biometric profile...";
                 proctorSection.textContent = "Proctoring: Fetching profile...";
                 const response = await fetch(`http://localhost:3000/get-user-face-data?email=${encodeURIComponent(userEmail)}`);
                 
@@ -582,28 +619,38 @@
                 );
                 faceMatcher = new faceapi.FaceMatcher([labeledDescriptors], FACE_MATCH_THRESHOLD);
                 
-                startCameraAndTimer();
+                await startCameraAndTimer();
 
             } catch (err) {
                 console.error("CRITICAL PROCTORING SETUP FAILURE:", err);
-                malpracticeEnforcement(`Proctoring setup failed: ${err.message}.`, true);
+                throw new Error(`Proctoring setup failed: ${err.message}.`);
             }
         }
 
         async function startCameraAndTimer() {
+            loadingMessageDiv.textContent = "Accessing Camera...";
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 cameraFeed.srcObject = stream;
                 
-                cameraFeed.addEventListener('loadeddata', () => {
-                    proctorSection.textContent = "Proctoring: Active";
-                    proctorSection.className = 'status-ok';
-                    proctorInterval = setInterval(proctorLoop, 500);
-                    if (initialTime > 0) startTimerLogic(); 
+                return new Promise(resolve => {
+                    cameraFeed.addEventListener('loadeddata', () => {
+                        proctorSection.textContent = "Proctoring: Active";
+                        proctorSection.className = 'status-ok';
+                        proctorInterval = setInterval(proctorLoop, 500);
+                        if (initialTime > 0) startTimerLogic(); 
+                        
+                        // --- FINAL STEP: HIDE OVERLAY HERE ---
+                        loadingOverlay.style.display = 'none';
+                        document.body.style.overflow = 'auto'; // Re-enable scrolling
+                        // --- END FINAL STEP ---
+
+                        resolve();
+                    });
                 });
             } catch (err) {
                 console.error("Camera Access Denied:", err);
-                malpracticeEnforcement("Camera access denied. Cannot proceed with the exam.", true);
+                throw new Error("Camera access denied. Cannot proceed with the exam.");
             }
         }
         
@@ -724,72 +771,92 @@
             }, 1000);
         }
         
-        // --- EXAM SUBMISSION / COMPILATION LOGIC (FIXED) ---
+        // --- REAL CODE EXECUTION LOGIC (FIXED) ---
         
-        compileBtn.addEventListener('click', () => {
+        compileBtn.addEventListener('click', async () => {
             if (isExamFinished) return; 
 
             const code = editor.getValue();
-            
-            outputTerminal.textContent = "Compiling...\n";
+            const inputData = testCaseInputEl.textContent.trim();
+            const language = languageDisplay.textContent;
+            const expectedOutput = correctOutput.trim();
+
+            outputTerminal.textContent = "Compiling and Running...\n";
             outputTerminal.style.color = '#90cdf4';
             compileBtn.disabled = true;
 
-            // --- SYNTAX/STRUCTURE CHECK (Mimics a real compiler checking for basic structure) ---
-            let isCodeValid = true;
-            if (languageDisplay.textContent === 'C' && !code.includes("#include")) {
-                outputTerminal.textContent = "Compilation Error: Missing required header <stdio.h>.";
-                isCodeValid = false;
-            } else if (languageDisplay.textContent === 'Python' && !code.includes("class Solution")) {
-                outputTerminal.textContent = "Compilation Error: Missing required 'Solution' class structure.";
-                isCodeValid = false;
-            }
-            // --- END SYNTAX CHECK ---
+            try {
+                // 1. Send code to server for real compilation/execution
+                const response = await fetch('http://localhost:3000/compile-and-run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userCode: code, 
+                        language: language,
+                        inputData: inputData
+                    })
+                });
 
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // --- SUCCESSFUL EXECUTION ---
+                    const userOutput = data.output.trim();
 
-            if (!isCodeValid) {
-                outputTerminal.style.color = '#f56565';
-                compileBtn.disabled = false;
-                isCorrect = false; 
-                return;
-            }
-
-            setTimeout(() => {
-                try {
-                    
-                    const template = `// Write your ${languageDisplay.textContent || 'C'} code here\n`;
-                    const codeModified = code.trim() !== template.trim();
-
-                    if (!codeModified) {
-                        outputTerminal.style.color = '#f56565';
-                        outputTerminal.textContent = `Compilation successful.
-Execution failed: Cannot run default code template.
-Please write your solution.`;
-                        isCorrect = false;
-                        return;
+                    if (userOutput === expectedOutput) {
+                        // SUCCESS PATH: Output matches expected output. (Awards 50 marks)
+                        outputTerminal.style.color = '#10b981'; // Green
+                        outputTerminal.textContent = `Compilation Successful.
+Execution Status: PASS (Test Case Matched)
+Input: ${inputData}
+Expected Output: ${expectedOutput}
+Actual Output: ${userOutput}
+---
+VERIFICATION RESULT: **Test Case PASSED.** Submission will receive 50 marks.`;
+                        isCorrect = true; 
+                    } else {
+                        // FAILED EXECUTION (Code ran but output was wrong)
+                        outputTerminal.style.color = '#f59e0b'; // Amber/Warning
+                        outputTerminal.textContent = `Compilation Successful.
+Execution Status: FAILED
+Input: ${inputData}
+Expected Output: ${expectedOutput}
+Actual Output: ${userOutput}
+---
+VERIFICATION RESULT: **Test Case FAILED.** Score will be determined by the AI (1-49 marks).`;
+                        isCorrect = false; // Force AI grading
                     }
-                    
-                    // --- FINAL SIMULATION LOGIC: Enforce AI Grading for 1-49 Score ---
-                    // 1. Terminal Output: Show a successful compilation, the mock output, and the unverified status.
-                    // 2. isCorrect: Set to FALSE. This forces the server to use Gemini for an actual grade (1-49 marks).
-                    
-                    outputTerminal.style.color = '#f6e05e'; // Warning color for simulated pass
-                    outputTerminal.textContent = `Execution finished (Simulated).
-Simulated Input: ${testInputData}
-Simulated Output: ${correctOutput}
 
-VERIFICATION RESULT: **Cannot verify correctness in this environment.** Your score will be determined by the AI upon submission.`;
-                    isCorrect = false; 
-                    // --- END FINAL SIMULATION LOGIC ---
+                } else {
+                    // --- COMPILATION / RUNTIME ERROR ---
+                    outputTerminal.style.color = '#ef4444'; // Red
+                    
+                    let errorDetails = data.error || 'Unknown Error';
+                    
+                    // Filter and format error output for terminal realism
+                    if (data.status === 'COMPILE_ERROR' || data.status === 'RUNTIME_ERROR' || data.status === 'TIMEOUT') {
+                         errorDetails = (data.output || errorDetails).trim() || errorDetails;
+                         // Truncate to keep the terminal readable, useful for C errors
+                         if(errorDetails.length > 500) {
+                             errorDetails = errorDetails.substring(0, 500) + "\n... (Error output truncated)";
+                         }
+                    }
 
-                } catch (e) {
-                    outputTerminal.style.color = '#f56565';
-                    outputTerminal.textContent = `Runtime Error in Simulation: ${e.message}`;
-                    isCorrect = false;
-                } finally {
-                     compileBtn.disabled = false;
+                    outputTerminal.textContent = `[${data.status}] ERROR:
+---
+${errorDetails}`;
+                    isCorrect = false; // Must be false on any error
+
                 }
-            }, 1000);
+                
+            } catch (error) {
+                // Connection or Server Setup Failure
+                outputTerminal.style.color = '#f56565';
+                outputTerminal.textContent = `LOCAL CONNECTION ERROR: Could not connect to backend execution environment. Ensure the server is running and compilers are installed. Details: ${error.message}`;
+                isCorrect = false;
+            } finally {
+                 compileBtn.disabled = false;
+            }
         });
 
         finishBtn.addEventListener('click', async () => {
@@ -880,7 +947,7 @@ VERIFICATION RESULT: **Cannot verify correctness in this environment.** Your sco
                 submissionStatus.textContent = "Submission successful! Redirecting...";
                 setTimeout(() => {
                     // Correct path to the completion page (located in the exam/ directory)
-                    window.location.href = `./exam/complete.html?score=${data.score}&exam=${exam}&email=${email}`;
+                    window.location.href = `complete.html?score=${data.score}&exam=${exam}&email=${email}`;
                 }, 500); 
 
             } catch (error) {
@@ -897,7 +964,7 @@ VERIFICATION RESULT: **Cannot verify correctness in this environment.** Your sco
             }
         });
 
-        // --- EXECUTION (Unchanged) ---
+        // --- EXECUTION (Initialization) ---
         document.addEventListener('DOMContentLoaded', () => {
             // Load required CodeMirror mode scripts once the structure is ready
             const loadScript = (src) => {
@@ -909,6 +976,9 @@ VERIFICATION RESULT: **Cannot verify correctness in this environment.** Your sco
                     document.head.appendChild(script);
                 });
             };
+            
+            // Show the loading overlay immediately
+            loadingOverlay.style.display = 'flex';
 
             // CRITICAL: Dynamically load CodeMirror mode files from CDN
             Promise.all([
@@ -926,3 +996,5 @@ VERIFICATION RESULT: **Cannot verify correctness in this environment.** Your sco
             window.addEventListener('beforeunload', handleBeforeUnload);
         });
     </script>
+</body>
+</html>

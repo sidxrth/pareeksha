@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pareeksha - MCQ Exam Demo</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* --- Base Variables & Reset --- */
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --primary-accent: #334155;
+            --primary-accent-hover: #1e293b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden; 
+        }
+
+        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+
+        /* --- Header / Layout --- */
+        .header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky; /* Changed to sticky for demo simplicity */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        .header-title { font-size: 1.25rem; font-weight: 600; }
+        .timer-box {
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background-color: #22c55e; /* Static green for demo */
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 6.5rem 2rem 2rem;
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .grid-layout { grid-template-columns: repeat(3, 1fr); }
+            .mcq-section { grid-column: span 2; }
+            .whiteboard-section { grid-column: span 1; }
+        }
+        
+        /* --- Components --- */
+        .card {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        .card.highlight {
+            border-left: 5px solid var(--primary-accent);
+        }
+        .finish-btn {
+            background-color: #c53030;
+            color: white;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+        .finish-btn:hover {
+            background-color: #9b2c2c;
+        }
+        .finish-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- MCQ Specific Styles --- */
+        .mcq-options-list {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+        .mcq-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+        .mcq-option:hover {
+            background-color: #f1f5f9;
+        }
+        .mcq-option .custom-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-accent);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 1rem;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .mcq-option.selected .custom-radio:after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--primary-accent);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+        .mcq-option.selected {
+            border-color: var(--primary-accent);
+            background-color: #eff6ff; 
+        }
+
+        .navigation-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        .nav-btn {
+            background-color: var(--primary-accent);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background-color: var(--primary-accent-hover);
+        }
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* --- Whiteboard Styles --- */
+        #whiteboard-canvas {
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            width: 100%;
+            cursor: crosshair;
+        }
+        .whiteboard-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .whiteboard-controls button {
+            padding: 0.3rem 0.6rem;
+            border: 1px solid var(--border-color);
+            background-color: #f1f5f9;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .whiteboard-controls button:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    
+    <header class="header">
+        <div class="header-title">MCQ Examination Demo</div>
+        <div class="header-controls">
+            <button id="finish-btn" class="finish-btn">Finish Exam</button>
+            <div class="timer-box" id="timer">00:00</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="grid-layout">
+            
+            <div class="mcq-section">
+                <div class="card highlight">
+                    <h2 id="question-index">Question 1 of 5</h2>
+                    <div id="question-text" class="problem-description">
+                        <p><strong>What is the primary benefit of using blockchain technology in the modern food supply chain?</strong></p>
+                        <p>This is a sample question to demonstrate the question area UI/UX. The length of the text can vary.</p>
+                    </div>
+                    
+                    <ul id="mcq-options-container" class="mcq-options-list">
+                        </ul>
+
+                    <div class="navigation-controls">
+                        <button id="prev-btn" class="nav-btn" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Previous
+                        </button>
+                        <button id="next-btn" class="nav-btn">
+                            Next
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.25rem; height: 1.25rem; display: inline-block; vertical-align: middle; margin-left: 0.25rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="whiteboard-section">
+                <div class="card" style="height: 100%;">
+                    <h3>Whiteboard / Notes</h3>
+                    <p class="text-sm text-gray-500 mb-2">Use this space for rough work. (Purely client-side)</p>
+                    
+                    <div class="whiteboard-controls">
+                        <button id="clear-btn">Clear Canvas</button>
+                        <button id="pen-size-btn" data-size="5">Pen Size: 5px</button>
+                        <button id="pen-color-btn" data-color="#334155">Color: Black</button>
+                    </div>
+                    
+                    <canvas id="whiteboard-canvas" height="500"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- DEMO DATA ---
+        const DEMO_QUESTIONS = [
+            {
+                id: 'q1',
+                questionText: 'What is the primary benefit of using blockchain technology in the modern food supply chain, as discussed in the seminar notes?',
+                options: [
+                    'Increased speed of transportation and logistics.',
+                    'Creation of a decentralized and transparent food network.',
+                    'Elimination of food packaging requirements.',
+                    'Instantaneous global price discovery for all commodities.'
+                ],
+                answer: null // User's selection
+            },
+            {
+                id: 'q2',
+                questionText: 'Which challenge did the seminar on blockchain in the food supply chain specifically *not* mention?',
+                options: [
+                    'Digital accessibility for small-scale farmers.',
+                    'Data privacy concerns.',
+                    'The need for regulatory adaptation.',
+                    'The risk of asteroid impact on server farms.' // Intentionally obvious wrong option
+                ],
+                answer: null
+            },
+            {
+                id: 'q3',
+                questionText: 'In object-oriented programming, which principle allows an object to take on many forms?',
+                options: [
+                    'Encapsulation',
+                    'Inheritance',
+                    'Polymorphism',
+                    'Abstraction'
+                ],
+                answer: null
+            },
+            {
+                id: 'q4',
+                questionText: 'What HTML tag is used to define an internal style sheet?',
+                options: [
+                    '<css>',
+                    '<script>',
+                    '<style>',
+                    '<link>'
+                ],
+                answer: null
+            },
+            {
+                id: 'q5',
+                questionText: 'Which of the following sorting algorithms has the best average-case time complexity?',
+                options: [
+                    'Bubble Sort',
+                    'Insertion Sort',
+                    'Quick Sort',
+                    'Selection Sort'
+                ],
+                answer: null
+            }
+        ];
+
+        // --- DOM Elements ---
+        const timerEl = document.getElementById('timer');
+        const questionIndexEl = document.getElementById('question-index');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('mcq-options-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const finishBtn = document.getElementById('finish-btn');
+        const canvas = document.getElementById('whiteboard-canvas');
+        const ctx = canvas.getContext('2d');
+        const clearBtn = document.getElementById('clear-btn');
+        const penSizeBtn = document.getElementById('pen-size-btn');
+        const penColorBtn = document.getElementById('pen-color-btn');
+
+        // --- STATE VARIABLES ---
+        let currentQuestionIndex = 0;
+        let timeLeft = 60 * 60; // 60 minutes for the demo
+        
+        // Whiteboard State
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let penSize = 5;
+        let penColor = '#334155';
+
+        // --- CORE FUNCTIONS ---
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const seconds = (timeLeft % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${minutes}:${seconds}`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishBtn.disabled = true;
+                alert("Time's up! Exam automatically finished.");
+            }
+        }
+
+        function startTimerLogic() {
+            updateTimerDisplay();
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) clearInterval(timerInterval);
+            }, 1000);
+        }
+
+        function updateQuestionDisplay() {
+            const q = DEMO_QUESTIONS[currentQuestionIndex];
+            
+            questionIndexEl.textContent = `Question ${currentQuestionIndex + 1} of ${DEMO_QUESTIONS.length}`;
+            questionTextEl.innerHTML = `
+                <p><strong>${q.questionText}</strong></p>
+            `;
+            
+            optionsContainer.innerHTML = ''; // Clear options
+            
+            q.options.forEach((optionText, index) => {
+                const li = document.createElement('li');
+                li.className = 'mcq-option';
+                
+                // Check if this option is the saved answer
+                if (optionText === q.answer) {
+                    li.classList.add('selected');
+                }
+
+                li.innerHTML = `
+                    <span class="custom-radio"></span>
+                    <span class="text-base">${String.fromCharCode(65 + index)}. ${optionText}</span>
+                `;
+                
+                // Attach event listener for selection
+                li.addEventListener('click', () => handleOptionSelect(index, optionText, li));
+                optionsContainer.appendChild(li);
+            });
+            
+            // Update navigation buttons status
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === DEMO_QUESTIONS.length - 1;
+        }
+
+        function handleOptionSelect(optionIndex, selectedOptionText, selectedLi) {
+            // Update the selected answer in the demo data structure
+            DEMO_QUESTIONS[currentQuestionIndex].answer = selectedOptionText;
+
+            // Update UI: Unselect all then select the chosen one
+            optionsContainer.querySelectorAll('.mcq-option').forEach(li => {
+                li.classList.remove('selected');
+            });
+            selectedLi.classList.add('selected');
+        }
+
+        // --- NAVIGATION HANDLERS ---
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                updateQuestionDisplay();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < DEMO_QUESTIONS.length - 1) {
+                currentQuestionIndex++;
+                updateQuestionDisplay();
+            }
+        });
+
+        finishBtn.addEventListener('click', () => {
+            alert("Demo Finished!\n\nUser Answers:\n" + JSON.stringify(DEMO_QUESTIONS.map(q => ({id: q.id, answer: q.answer})), null, 2));
+            // In a real app, this would trigger the submission overlay and server call.
+        });
+
+        // --- WHITEBOARD LOGIC ---
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            // Clear and redraw on resize (simplified: just clear)
+            clearCanvas();
+        }
+        
+        function clearCanvas() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.strokeStyle = penColor;
+            ctx.lineWidth = penSize;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize MCQ display
+            updateQuestionDisplay();
+
+            // 2. Start Timer
+            startTimerLogic();
+            
+            // 3. Initialize Whiteboard
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            clearCanvas();
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mouseout', () => isDrawing = false);
+            
+            clearBtn.addEventListener('click', clearCanvas);
+
+            penSizeBtn.addEventListener('click', () => {
+                penSize = penSize === 5 ? 10 : 5;
+                penSizeBtn.textContent = `Pen Size: ${penSize}px`;
+            });
+
+            penColorBtn.addEventListener('click', () => {
+                penColor = penColor === '#334155' ? '#c53030' : '#334155'; // Black or Red
+                penColorBtn.textContent = penColor === '#334155' ? 'Color: Black' : 'Color: Red';
+            });
+        });
+    </script>
+</body>
+</html>

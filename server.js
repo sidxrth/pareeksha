@@ -1,10 +1,14 @@
 // server.js
 const express = require('express');
 const nodemailer = require('nodemailer');
-const db = require('./database.js'); // Assuming database.js is created and exports the DB object
+const db = require('./database.js'); 
 const path = require('path');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+// --- NEW MODULES FOR CODE EXECUTION ---
+const { exec } = require('child_process');
+const fs = require('fs');
+// --- END NEW MODULES ---
 
 // --- Gemini API Key ---
 // Replace "YOUR_API_KEY" with your actual Gemini API key
@@ -108,15 +112,12 @@ app.post('/store-face-data', (req, res) => {
     });
 });
 
-// --- NEW ENDPOINT: Retrieve single user's face data for client-side proctoring ---
 app.get('/get-user-face-data', (req, res) => {
     const { email } = req.query;
     if (!email) {
-        // Send JSON error if email is missing
         return res.status(400).json({ message: 'Email query parameter is required.' });
     }
     
-    // Select the face_descriptor for the specific user
     const sql = 'SELECT face_descriptor FROM users WHERE email = ?';
     db.get(sql, [email], (err, row) => {
         if (err) {
@@ -124,52 +125,130 @@ app.get('/get-user-face-data', (req, res) => {
             return res.status(500).json({ message: 'Database error occurred.' });
         }
         if (!row || !row.face_descriptor) {
-            // Send JSON error if descriptor is missing/user not found
             return res.status(404).json({ message: 'User profile or face data not found.' });
         }
-        // Send the descriptor string back in a JSON object
         res.status(200).json({ face_descriptor: row.face_descriptor });
     });
 });
 
-app.get('/get-all-face-data', (req, res) => {
-    const sql = 'SELECT email, name, city, exam, face_descriptor FROM users WHERE face_descriptor IS NOT NULL';
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            console.error('DB Error (Get All Data):', err.message);
-            return res.status(500).json({ message: 'Failed to get user data.' });
-        }
-        const users = rows.map(user => {
+
+// --- NEW ENDPOINT: CODE COMPILATION AND EXECUTION ---
+app.post('/compile-and-run', (req, res) => {
+    const { userCode, language, inputData } = req.body;
+    const tempFileName = `temp_${Date.now()}`;
+    let fileExtension, compileCommand, runCommand;
+
+    // 1. Determine commands and file extension
+    switch (language.toLowerCase()) {
+        case 'c':
+            fileExtension = 'c';
+            compileCommand = `gcc ${tempFileName}.c -o ${tempFileName}.out`;
+            runCommand = `./${tempFileName}.out`;
+            break;
+        case 'java':
+            fileExtension = 'java';
+            // Use tempFileName for the Java class name to match the file name.
+            compileCommand = `javac ${tempFileName}.java`;
+            runCommand = `java ${tempFileName}`;
+            break;
+        case 'python':
+            fileExtension = 'py';
+            compileCommand = null; 
+            // --- FIX: Use 'python' instead of 'python3' for better Windows compatibility ---
+            runCommand = `python ${tempFileName}.py`; 
+            // ----------------------------------------------------------------------------------
+            break;
+        default:
+            return res.status(400).json({ message: 'Unsupported language for compilation.' });
+    }
+
+    const fullFileName = `${tempFileName}.${fileExtension}`;
+    
+    // For Java, replace the class name in the code to match the temporary filename
+    const codeToWrite = language.toLowerCase() === 'java' 
+        ? userCode.replace(/class\s+Solution/g, `class ${tempFileName}`)
+        : userCode;
+
+    // 2. Write code to a temporary file
+    fs.writeFile(fullFileName, codeToWrite, (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to write temporary file.' });
+
+        // 3. Define Cleanup function
+        const cleanup = () => {
             try {
-                return { ...user, face_descriptor: JSON.parse(user.face_descriptor) };
+                fs.unlinkSync(fullFileName);
+                if (language.toLowerCase() === 'c') {
+                    fs.unlinkSync(`${tempFileName}.out`);
+                } else if (language.toLowerCase() === 'java') {
+                    fs.unlinkSync(`${tempFileName}.class`);
+                }
             } catch (e) {
-                return { ...user, face_descriptor: null };
+                // Ignore cleanup errors
             }
-        }).filter(user => user.face_descriptor);
-        res.status(200).json({ users });
+        };
+
+        // 4. Execution logic: Compile (if needed) then Run
+        const executeCode = (execCmd, input) => {
+            // Set a timeout of 5 seconds for execution
+            const executionProcess = exec(execCmd, { timeout: 5000 }, (runtimeErr, stdout, stderr) => {
+                cleanup();
+
+                if (runtimeErr) {
+                    // Check for timeout
+                    if (runtimeErr.signal === 'SIGTERM' || runtimeErr.killed) {
+                        return res.status(400).json({ status: 'TIMEOUT', output: 'Execution Timed Out (Max 5s).', error: 'Process execution exceeded 5 seconds. This usually indicates an infinite loop or high complexity.' });
+                    }
+                    // Capture runtime errors
+                    return res.status(400).json({ status: 'RUNTIME_ERROR', output: stderr || stdout, error: runtimeErr.message });
+                }
+                
+                // Return successful output (stdout)
+                res.status(200).json({ status: 'SUCCESS', output: stdout.trim(), error: stderr.trim() });
+            });
+
+            // Pipe input data to the process
+            if (input) {
+                executionProcess.stdin.write(input);
+                executionProcess.stdin.end();
+            }
+        };
+
+        // 5. Start Compilation or Execution
+        if (compileCommand) {
+            exec(compileCommand, { timeout: 3000 }, (compileErr, stdout, stderr) => {
+                if (compileErr) {
+                    cleanup();
+                    // Send back compilation errors
+                    return res.status(400).json({ status: 'COMPILE_ERROR', output: stderr || stdout, error: compileErr.message });
+                }
+                
+                // If compilation succeeds, run the compiled executable
+                executeCode(runCommand, inputData);
+            });
+        } else {
+            // For interpreted languages (Python)
+            executeCode(runCommand, inputData);
+        }
     });
 });
 
 // --- EXAM SUBMISSION & SCORING ---
 app.post('/submit-exam', async (req, res) => {
-    // --- MODIFICATION: Receive the new submittedQuestion object ---
     const { email, exam, userCode, timeRemaining, isCorrect, submittedQuestion } = req.body;
     let score = 0;
 
-    // FIX: Map the generic exam slug to a user-friendly name
     const examFullName = exam === 'program' ? 'Programming Exam' : 
                          exam === 'mcq' ? 'Multiple Choice Exam' :
                          exam === 'theory' ? 'Theory Exam' : submittedQuestion?.title || 'Unknown Exam';
 
-    // 1. Scoring Logic: Award 50 if client-side check passed AND time remains.
+    // 1. Scoring Logic: Award 50 if client-side check passed AND time remains (PERFECT SCORE PATH)
     if (isCorrect && timeRemaining > 0) {
         score = 50;
     } else {
-        // 2. AI Evaluation Logic for partial/incorrect scores
+        // 2. AI Evaluation Logic for partial/incorrect scores (AI GRADING PATH)
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
             
-            // Construct a detailed prompt for Gemini
             const prompt = `
                 You are an automated grading system. Evaluate the student's submitted code against the provided programming question.
                 
@@ -178,10 +257,10 @@ app.post('/submit-exam', async (req, res) => {
                 --- QUESTION DETAILS ---
                 Title: ${submittedQuestion.title}
                 Description: ${submittedQuestion.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ')}
-                Language: ${exam}
+                Language: ${submittedQuestion.language}
                 
                 --- SUBMITTED CODE ---
-                \`\`\`${exam === 'c' ? 'c' : exam}\n${userCode}\n\`\`\`
+                \`\`\`${submittedQuestion.language}\n${userCode}\n\`\`\`
 
                 --- EVALUATION CRITERIA ---
                 1. Correctness: Does the code solve the problem? (40% weight)
@@ -198,7 +277,6 @@ app.post('/submit-exam', async (req, res) => {
             const response = await result.response;
             const text = response.text.trim();
             
-            // Extract the score, ensuring it's an integer between 0 and 49 (inclusive)
             const parsedScore = parseInt(text, 10);
             score = isNaN(parsedScore) ? 1 : Math.min(49, Math.max(0, parsedScore)); 
 
@@ -207,16 +285,9 @@ app.post('/submit-exam', async (req, res) => {
             score = 1; // Assign a minimum score if AI fails
         }
     }
-    // --- END MODIFICATION ---
 
     const sql = `UPDATE users SET score = ? WHERE email = ? AND exam = ?`;
     
-    // --- DEBUGGING LOGIC ---
-    console.log(`\n[DB DEBUG] Score generated: ${score}`);
-    console.log(`[DB DEBUG] Attempting to update user: ${email} for exam: ${exam}`);
-    console.log(`[DB DEBUG] Query parameters: [${score}, ${email}, ${exam}]`);
-    // -----------------------
-
     db.run(sql, [score, email, exam], function(err) {
         if (err) {
             console.error('DB Error (Submit Exam):', err.message);
@@ -228,7 +299,6 @@ app.post('/submit-exam', async (req, res) => {
             return res.status(404).json({ message: 'Error: User not found in database or exam name mismatch.' }); 
         }
         
-        // Send Email after successful DB update (New Requirement)
         sendCompletionEmail(email, examFullName, score);
         
         console.log(`[DB SUCCESS] Score saved for ${email}. Rows affected: ${this.changes}`);

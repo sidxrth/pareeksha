@@ -12,16 +12,17 @@ import {
     doc,
     setDoc,
     addDoc,
+    updateDoc, // <--- CRITICAL FIX: Imported updateDoc
+    deleteDoc, // <--- Also including deleteDoc for the result.html delete feature
     getDoc,
     getDocs,
     collection,
     query,
     where,
-    orderBy
+    orderBy,
+    serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// This will be replaced by the canvas environment's configuration at runtime.
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDzjXQFc0VmzkBucL0zZOt535ToCtsvzs8",
@@ -33,30 +34,12 @@ const firebaseConfig = {
   measurementId: "G-NDP4DQTS2K"
 };
 
-// A helper to safely parse the config if it's provided as a string
-function getFirebaseConfig() {
-    if (typeof __firebase_config !== 'undefined') {
-        try {
-            return JSON.parse(__firebase_config);
-        } catch (e) {
-            console.error("Error parsing Firebase config:", e);
-            // Fallback to placeholder if parsing fails
-            return firebaseConfig;
-        }
-    }
-    return firebaseConfig;
-}
-
-
-// Initialize Firebase
-const app = initializeApp(getFirebaseConfig());
-
-// Initialize Firebase services
+// Initialize Firebase and export the services
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const appId = firebaseConfig.appId; // Use appId from your actual config
 
-// Export the initialized services and functions for other scripts to use
 export {
     app,
     auth,
@@ -69,10 +52,13 @@ export {
     doc,
     setDoc,
     addDoc,
+    updateDoc, // <--- CRITICAL FIX: Exported updateDoc
+    deleteDoc, // <--- Exported deleteDoc
     getDoc,
     getDocs,
     collection,
     query,
     where,
-    orderBy
+    orderBy,
+    serverTimestamp
 };

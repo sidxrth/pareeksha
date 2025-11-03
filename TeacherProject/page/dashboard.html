@@ -3,289 +3,588 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Pareeksha Teacher</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Pareeksha Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc; 
+        /* BASE STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        .btn { 
-            display: inline-block; 
-            background-color: #3b82f6; 
-            color: white; 
-            padding: 0.75rem 1.5rem; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            transition: all 0.2s ease; 
-            text-decoration: none; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        .btn:hover { 
-            background-color: #2563eb; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
-            transform: translateY(-2px); 
-        }
-
-        .card { 
-            background-color: white; 
-            border-radius: 12px; 
-            padding: 1.5rem; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border: 1px solid #e2e8f0; 
-            transition: all 0.2s ease-in-out; 
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #000000;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        /* HEADER STYLES */
+        header {
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #ffffff; 
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
             justify-content: space-between;
+            padding: 1rem 0;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        /* UPDATED: Logo styling for better visibility and no black box */
+        .logo-icon {
+            width: 64px; /* Larger icon size */
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-color: transparent; 
+            border-radius: 0;
+        }
+        .logo-icon img {
+            max-width: 200%;
+            max-height: 190%;
+            display: block;
+        }
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #000000;
         }
 
-        .card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 12px 25px rgba(0,0,0,0.08); 
-        }
-
-        #loading-spinner { 
-            border: 4px solid rgba(0,0,0,0.1); 
-            width: 48px; 
-            height: 48px; 
-            border-radius: 50%; 
-            border-left-color: #3b82f6; 
-            animation: spin 1s ease infinite; 
+        /* USER ACTIONS (User Icon and Logout Button) */
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        @keyframes spin { 
-            to { transform: rotate(360deg); } 
-        }
-
-        .toggle-button {
+        .user-profile-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: transparent;
+            color: #000000;
+            border: 1px solid #e5e7eb;
             cursor: pointer;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            font-weight: 500;
-            color: #4b5563;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 10;
+            transition: all 0.2s;
+        }
+        .user-profile-icon:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        .user-profile-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
         }
 
-        .toggle-button.active {
+        /* Logout Button (Icon Only, Primary Style) */
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; 
+            height: 40px;
+            padding: 0;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            
+            background-color: #000000;
             color: #ffffff;
+            border: none;
+        }
+        .logout-btn:hover {
+            background-color: #1f2937;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .logout-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
         }
 
-        #toggle-indicator {
-            position: absolute;
-            height: 100%;
-            width: 50%;
-            background-color: #3b82f6;
+
+        /* MAIN CONTENT LAYOUT */
+        .dashboard-main {
+            flex-grow: 1;
+            padding: 3rem 0;
+        }
+        .dashboard-main .container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            min-height: calc(100vh - 120px); 
+        }
+
+        /* Two-Column Grid Setup */
+        .main-grid {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start; 
+        }
+
+        /* Left Column Styles (Main Content) */
+        .main-content-left {
+            flex: 3; 
+            min-width: 60%;
+        }
+
+        /* Right Column Styles (Action Panel) */
+        .action-panel-right {
+            flex: 1; 
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 2rem;
+            /* Removed sticky positioning for better mobile handling */
+        }
+
+        /* Mobile Responsiveness: Stack columns */
+        @media (max-width: 992px) {
+            .main-grid {
+                flex-direction: column;
+            }
+            .main-content-left, .action-panel-right {
+                flex: none;
+                width: 100%;
+                min-width: 100%;
+            }
+            .action-panel-right {
+                order: -1; 
+                padding-top: 0; 
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* Large + Button Styles (Now applied to an <a> tag) */
+        .create-new-btn {
+            /* Inherited from <a> tag */
+            text-decoration: none; 
+            width: 100%;
+            height: 150px;
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+        }
+        .create-new-btn:hover {
+            background-color: #1f2937;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2);
+        }
+        .create-new-btn .plus-icon {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .create-new-btn .create-new-text {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #000000;
+        }
+
+        /* Exam Toggle Tabs */
+        .tab-controls {
+            display: inline-flex;
+            margin-bottom: 2rem;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+            border: 1px solid #d1d5db;
+        }
+
+        .tab-toggle {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6b7280;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        /* Active Toggle Styling (BLACK BACKGROUND, WHITE TEXT) */
+        .tab-toggle.active {
+            background-color: #000000;
+            color: #ffffff; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-toggle:not(.active):hover {
+            color: #000000;
+        }
+
+        .tab-content {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            min-height: 300px;
+        }
+
+        .exam-list {
+            display: none;
+        }
+
+        .exam-list.active {
+            display: block;
+        }
+
+        .exam-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; /* Added cursor to indicate clickability */
+            transition: background-color 0.1s;
+        }
+        
+        .exam-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .exam-item:last-child {
+            border-bottom: none;
+        }
+
+        .exam-title {
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 0.25rem;
+        }
+
+        .exam-date {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .exam-status {
+            padding: 0.35rem 0.8rem;
             border-radius: 9999px;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 5;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
-        .fab { 
-            position: fixed; 
-            bottom: 2rem; 
-            right: 2rem; 
-            width: 4rem; 
-            height: 4rem; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+        .status-current {
+            background-color: #ecfdf5; 
+            color: #059669; 
+            border: 1px solid #10b981;
         }
+
+        .status-past {
+            background-color: #fef2f2; 
+            color: #ef4444; 
+            border: 1px solid #f87171;
+        }
+        
+        /* Metrics card styles removed per request */
     </style>
 </head>
-<body class="p-4 sm:p-8">
-
-    <div id="loader" class="flex flex-col justify-center items-center h-screen fixed inset-0 bg-white">
-        <div id="loading-spinner"></div>
-        <p class="mt-4 text-gray-600 text-lg">Loading Dashboard...</p>
-    </div>
-
-    <div id="app-container" class="max-w-7xl mx-auto hidden">
-        <header class="flex justify-between items-center mb-10">
-            <div class="flex items-center gap-3">
-                <svg class="h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5L6 12l1.41-1.41L10.5 14.67l6.09-6.09L18 10l-7.5 7.5z"/></svg>
-                <h1 class="text-3xl font-bold text-gray-800">Pareeksha</h1>
-            </div>
-            <div class="relative group">
-                <button id="user-menu-btn" class="flex items-center gap-3 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <span id="welcome-message" class="font-semibold text-gray-700">Welcome!</span>
-                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold" id="user-initial"></div>
-                </button>
-                <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 hidden group-hover:block z-20">
-                    <button id="logout-btn" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
-                        Log Out
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="logo-icon" id="logo-placeholder">
+                        <img src="../assets/icon.ico" alt="Pareeksha Logo">
+                    </div>
+                    <span class="logo-text">Pareeksha</span>
+                </div>
+                
+                <div class="user-actions">
+                    <button class="user-profile-icon" onclick="showProfileModal()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path>
+                        </svg>
+                    </button>
+                    
+                    <button id="logout-button" class="logout-btn">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <div class="flex justify-center mb-8">
-            <div class="relative flex items-center p-1 rounded-full bg-gray-200">
-                <div id="toggle-indicator"></div>
-                <div id="toggle-current" class="toggle-button active">Current Exams</div>
-                <div id="toggle-past" class="toggle-button">Past Exams</div>
+    <div class="dashboard-main">
+        <div class="container main-grid"> 
+            
+            <div class="main-content-left">
+                <h2>Exam Management Dashboard</h2>
+
+                <div class="tab-controls">
+                    <button id="current-tab" class="tab-toggle active">
+                        Current Exams
+                    </button>
+                    <button id="past-tab" class="tab-toggle">
+                        Past Exams
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="current-exams-list" class="exam-list active">
+                        <p id="current-loading-message" style="color: #6b7280; font-style: italic;">Fetching exam data...</p>
+                    </div>
+
+                    <div id="past-exams-list" class="exam-list">
+                        <p id="past-loading-message" style="color: #6b7280; font-style: italic;">Fetching exam data...</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <main id="exam-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            </main>
-        
-        <div id="no-exams-message" class="text-center py-20 hidden">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2z" />
-            </svg>
-            <h3 class="mt-2 text-lg font-medium text-gray-900">No exams yet</h3>
-            <p class="mt-1 text-sm text-gray-500">Get started by creating a new exam.</p>
+            <div class="action-panel-right">
+                <a href="add_new.html" class="create-new-btn">
+                    <span class="plus-icon">+</span>
+                    <span class="create-new-text">Create New Exam</span>
+                </a>
+                
+                </div>
         </div>
-
-        <a href="add_new.html" class="fab btn">
-            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H5a1 1 0 110-2h6V5a1 1 0 011-1z"/></svg>
-        </a>
     </div>
 
     <script type="module">
         import {
             auth,
             db,
-            appId,
             onAuthStateChanged,
             signOut,
-            doc,
-            getDoc,
             collection,
+            query,
             getDocs,
-            orderBy,
-            query
-        } from '../firebase-init.js'; /* <-- FIXED: Path changed from ./ to ../ */
+            orderBy, // Retain orderBy import even if not used in main query
+            where 
+        } from '../firebase-init.js'; 
 
-        // --- DOM Elements ---
-        const appContainer = document.getElementById('app-container');
-        const loader = document.getElementById('loader');
-        const welcomeMessage = document.getElementById('welcome-message');
-        const userInitial = document.getElementById('user-initial');
-        const logoutBtn = document.getElementById('logout-btn');
-        const examList = document.getElementById('exam-list');
-        const noExamsMessage = document.getElementById('no-exams-message');
-        const toggleCurrent = document.getElementById('toggle-current');
-        const togglePast = document.getElementById('toggle-past');
-        const toggleIndicator = document.getElementById('toggle-indicator');
+        function showProfileModal() {
+            alert('Opening Profile Settings for the Educator (Placeholder)');
+        }
+
+        const currentTab = document.getElementById('current-tab');
+        const pastTab = document.getElementById('past-tab');
+        const currentContent = document.getElementById('current-exams-list');
+        const pastContent = document.getElementById('past-exams-list');
+        const logoutButton = document.getElementById('logout-button');
 
         let allExams = [];
-        let currentFilter = 'current';
 
-        // --- Authentication ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                await Promise.all([fetchTeacherData(user), fetchExams()]);
-                renderExams();
-                loader.style.display = 'none';
-                appContainer.style.display = 'block';
-            } else {
-                window.location.href = './auth/login.html';
-            }
-        });
+        // Function to handle tab switching logic
+        function switchTab(activeTab, inactiveTab, activeContent, inactiveContent) {
+            activeTab.classList.add('active');
+            inactiveTab.classList.remove('active');
 
-        async function fetchTeacherData(user) {
-            // --- FIXED: Firestore path now matches the path used during signup ---
-            const teacherDocRef = doc(db, `artifacts/${appId}/teachers/${user.uid}`);
-            const docSnap = await getDoc(teacherDocRef);
-            if (docSnap.exists()) {
-                const teacherName = docSnap.data().name;
-                welcomeMessage.textContent = `Hi, ${teacherName.split(' ')[0]}`;
-                userInitial.textContent = teacherName.charAt(0).toUpperCase();
-            }
+            activeContent.classList.add('active');
+            inactiveContent.classList.remove('active');
         }
 
-        // --- Data Fetching ---
-        async function fetchExams() {
-            try {
-                const examsCollectionRef = collection(db, `artifacts/${appId}/exams`);
-                const q = query(examsCollectionRef, orderBy('createdAt', 'desc'));
-                const querySnapshot = await getDocs(q);
-                allExams = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error("Error fetching exams:", error);
-                examList.innerHTML = `<p class="text-red-500 col-span-full">Error loading exams: ${error.message}</p>`;
+        function renderExams(exams, container, isPast = false) {
+            container.innerHTML = '';
+            // Display message if no exams are found
+            if (exams.length === 0) {
+                container.innerHTML = `<p style="margin-top: 1.5rem; color: #6b7280; font-style: italic;">No ${isPast ? 'past' : 'current/upcoming'} exams found.</p>`;
+                return;
             }
-        }
-        
-        // --- UI Rendering ---
-        function renderExams() {
-            examList.innerHTML = '';
-            
-            const filteredExams = currentFilter === 'current' ? allExams : [];
-            
-            noExamsMessage.style.display = filteredExams.length === 0 ? 'block' : 'none';
 
-            filteredExams.forEach(exam => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
+            exams.forEach(exam => {
+                const statusClass = exam.status === 'Completed' ? 'status-past' : (exam.status === 'Upcoming' ? 'status-current' : 'status-current');
+                const statusText = exam.status === 'Completed' ? 'Graded' : (exam.status === 'Upcoming' ? 'Upcoming' : 'Active');
+                
+                // Format dates
+                const dateText = isPast 
+                    ? `Closed: ${new Date(exam.closingDateTime).toLocaleDateString()}`
+                    : `Scheduled: ${new Date(exam.openingDateTime).toLocaleDateString()} (${new Date(exam.openingDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+
+                const examItem = document.createElement('div');
+                examItem.className = 'exam-item';
+                
+                // 🚨 KEY CHANGE: Store the ID directly on the element for retrieval by the parent listener
+                examItem.dataset.examId = exam.id;
+                
+                // Set the inner HTML content
+                examItem.innerHTML = `
                     <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-xl font-bold text-gray-800">${exam.name}</h3>
-                            <span class="text-xs font-semibold bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${exam.questions.length} Questions</span>
-                        </div>
-                        <p class="text-sm text-gray-500 mb-6">Time Limit: ${exam.timeLimit} minutes</p>
-                        
-                        <div>
-                            <p class="text-xs font-semibold text-gray-500 mb-1">STUDENT LINK (CLICK TO COPY)</p>
-                            <div class="link-box bg-gray-50 p-3 rounded-lg text-sm text-gray-700 font-mono cursor-pointer hover:bg-gray-100 transition-colors" title="Click to copy">
-                                pareeksha://exam/${exam.id}
-                            </div>
-                        </div>
+                        <div class="exam-title">${exam.examName}</div>
+                        <div class="exam-date">${dateText}</div>
                     </div>
-                    <button data-exam-id="${exam.id}" class="view-results-btn mt-6 w-full text-center bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-blue-600 transition-colors">View Results</button>
+                    <span class="exam-status ${statusClass}">${statusText}</span>
                 `;
-                examList.appendChild(card);
+                container.appendChild(examItem);
             });
+            
+            container.innerHTML += `<p style="margin-top: 1.5rem; color: #6b7280; font-size: 0.9rem;">Showing ${exams.length} ${isPast ? 'past' : 'current/upcoming'} exams. Click on an exam to view results.</p>`;
         }
-        
-        // --- Event Listeners ---
-        logoutBtn.addEventListener('click', async () => {
-            await signOut(auth);
-        });
 
-        toggleCurrent.addEventListener('click', () => {
-            currentFilter = 'current';
-            toggleCurrent.classList.add('active');
-            togglePast.classList.remove('active');
-            toggleIndicator.style.transform = 'translateX(0%)';
-            renderExams();
-        });
+        async function fetchAndProcessExams() {
+            // Remove previous loading messages
+            currentContent.innerHTML = '';
+            pastContent.innerHTML = '';
+            
+            // Show new loading messages
+            currentContent.innerHTML = `<p style="margin-top: 1.5rem; color: #6b7280; font-style: italic;">Fetching exam data...</p>`;
+            pastContent.innerHTML = `<p style="margin-top: 1.5rem; color: #6b7280; font-style: italic;">Fetching exam data...</p>`;
 
-        togglePast.addEventListener('click', () => {
-            currentFilter = 'past';
-            togglePast.classList.add('active');
-            toggleCurrent.classList.remove('active');
-            toggleIndicator.style.transform = 'translateX(100%)';
-            renderExams();
-        });
 
-        examList.addEventListener('click', (e) => {
-            const target = e.target.closest('.link-box');
-            if (target) {
-                const link = target.textContent.trim();
-                navigator.clipboard.writeText(link).then(() => {
-                    const originalText = target.innerHTML;
-                    target.innerHTML = 'Copied to Clipboard!';
-                    target.classList.add('bg-green-100');
-                    setTimeout(() => { 
-                        target.innerHTML = originalText;
-                        target.classList.remove('bg-green-100');
-                     }, 2000);
+            try {
+                const user = auth.currentUser; 
+
+                // 🚨 CRITICAL FIX: Removed orderBy("closingDateTime", "desc") to avoid composite index requirement.
+                const q = query(
+                    collection(db, "exams"), 
+                    where('creatorId', '==', user.uid)
+                    // The query now only uses a filter on one field, which requires only a single-field index (which is automatic or trivial to create).
+                );
+
+                const querySnapshot = await getDocs(q);
+                const now = new Date();
+                
+                const currentExams = [];
+                const pastExams = [];
+                allExams = []; 
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const closingTime = new Date(data.closingDateTime);
+                    const openingTime = new Date(data.openingDateTime);
+                    
+                    let status = 'Upcoming';
+                    if (now > openingTime && now < closingTime) {
+                        status = 'Active';
+                    } else if (now >= closingTime) {
+                        status = 'Completed';
+                    }
+
+                    const exam = {
+                        id: doc.id,
+                        ...data,
+                        status: status 
+                    };
+                    
+                    allExams.push(exam);
                 });
+
+                // 🚨 CRITICAL FIX: Perform sorting on the client-side after fetching
+                allExams.sort((a, b) => new Date(b.closingDateTime) - new Date(a.closingDateTime));
+
+
+                // Separate into current and past exams
+                allExams.forEach(exam => {
+                    if (exam.status === 'Completed') {
+                        pastExams.push(exam);
+                    } else {
+                        currentExams.push(exam);
+                    }
+                });
+
+
+                // Initial render: show current exams
+                renderExams(currentExams, currentContent, false);
+                renderExams(pastExams, pastContent, true);
+
+
+            } catch (error) {
+                console.error("Error fetching exams: ", error);
+                // Display a fallback message if something else goes wrong
+                currentContent.innerHTML = `<p style="margin-top: 1.5rem; color: red; font-style: italic;">Error loading exams. An internal query issue or a simple index creation is still required in the Firebase console for the creatorId field.</p>`;
+                pastContent.innerHTML = `<p style="margin-top: 1.5rem; color: red; font-style: italic;">Error loading exams. An internal query issue or a simple index creation is still required in the Firebase console for the creatorId field.</p>`;
             }
-            if (e.target.classList.contains('view-results-btn')) {
-                const examId = e.target.dataset.examId;
-                alert(`Navigating to results for exam ID: ${examId} (Page not yet created)`);
+        }
+
+        // 🚨 NEW DELEGATED EVENT HANDLER FUNCTION
+        function handleExamClick(event) {
+            const clickedExam = event.target.closest('.exam-item');
+            if (clickedExam && clickedExam.dataset.examId) {
+                const examId = clickedExam.dataset.examId;
+                window.location.href = `./result.html?id=${examId}`;
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach the single delegated listener to the parent containers
+            currentContent.addEventListener('click', handleExamClick);
+            pastContent.addEventListener('click', handleExamClick);
+
+            // Authenticates the user and fetches data only if logged in
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    fetchAndProcessExams();
+                } else {
+                    // Redirect to login if not authenticated
+                    window.location.href = '../auth/login.html';
+                }
+            });
+            
+            // Tab switching listeners
+            currentTab.addEventListener('click', () => {
+                switchTab(currentTab, pastTab, currentContent, pastContent);
+                // Re-render current exams on tab switch
+                renderExams(allExams.filter(e => e.status !== 'Completed'), currentContent, false);
+            });
+
+            pastTab.addEventListener('click', () => {
+                switchTab(pastTab, currentTab, pastContent, currentContent);
+                // Re-render past exams on tab switch
+                renderExams(allExams.filter(e => e.status === 'Completed'), pastContent, true);
+            });
+
+            // Logout action
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    // AuthStateChanged listener will handle the redirect
+                } catch (error) {
+                    alert('Logout failed: ' + error.message);
+                }
+            });
         });
     </script>
 </body>

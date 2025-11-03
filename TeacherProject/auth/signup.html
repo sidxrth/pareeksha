@@ -3,214 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Teacher Account - Pareeksha</title>
+    <title>Create Account - Pareeksha</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
-        .form-container { background-color: #ffffff; border-radius: 12px; padding: 2.5rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); border: 1px solid #e2e8f0; }
-        .form-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e0; border-radius: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease; font-size: 1rem; }
-        .form-input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
-        .btn { padding: 0.75rem 1.5rem; text-decoration: none; display: inline-block; transition: all 0.2s ease; font-size: 1rem; font-weight: 600; width: 100%; border-radius: 8px; border: none; cursor: pointer; }
-        .btn-primary { background-color: #3182ce; color: #ffffff; }
-        .btn-primary:hover:not(:disabled) { background-color: #2b6cb0; }
-        .btn-primary:disabled { background-color: #a0aec0; cursor: not-allowed; }
-        .btn-secondary { background-color: #e2e8f0; color: #2d3748; }
-        .btn-secondary:hover { background-color: #cbd5e0; }
-        .header h1 { font-size: 2rem; font-weight: 700; color: #2c5282; }
-        .form-step { display: none; }
-        .form-step.active { display: block; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #fafafa;
+            color: #1f2937;
+            min-height: 100vh;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 2rem 1rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .form-container { 
+            width: 100%;
+            max-width: 440px; 
+            background-color: #ffffff; 
+            border-radius: 16px;
+            padding: 2.5rem 2rem; 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 40px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Header */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-icon {
+            width: 290px;
+            height: 150px;
+            margin: 0 auto 0.75rem;
+        }
+        
+        .logo-icon img {
+            width: 100%;
+            height: 150%;
+            object-fit: contain;
+        }
+        
+        .brand-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .subtitle {
+            font-size: 0.9375rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0 2rem;
+            gap: 0.5rem;
+        }
+        
+        .step-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            transition: all 0.25s ease;
+        }
+        
+        .step-dot.active {
+            background-color: #000000;
+            width: 20px;
+            border-radius: 3px;
+        }
+        
+        .step-dot.completed {
+            background-color: #9ca3af;
+        }
+        
+        /* Form Elements */
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-input { 
+            width: 100%; 
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            transition: all 0.2s ease; 
+            font-size: 0.9375rem;
+            color: #1f2937;
+            background-color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .form-input:focus { 
+            outline: none; 
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-input:hover:not(:focus) {
+            border-color: #9ca3af;
+        }
+        
+        /* Password Field */
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:hover {
+            color: #4b5563;
+        }
+        
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Buttons */
+        .btn { 
+            width: 100%;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9375rem; 
+            font-weight: 600; 
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary { 
+            background-color: #000000;
+            color: #ffffff;
+        }
+        
+        .btn-primary:hover:not(:disabled) { 
+            background-color: #1f2937;
+        }
+        
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+        
+        .btn:disabled { 
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Back Button */
+        .back-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .back-btn:hover {
+            color: #000000;
+        }
+        
+        .back-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Form Steps */
+        .form-step { 
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        
+        .form-step.active { 
+            display: block; 
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Status Messages */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.25rem;
+            display: none;
+            border: 1px solid;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+        
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+        
+        .alert-info {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.7s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        .form-footer {
+            text-align: center;
+            margin-top: 1.75rem;
+            padding-top: 1.75rem;
+            border-top: 1px solid #f3f4f6;
+        }
+        
+        .form-footer-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .form-footer-link {
+            color: #000000;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        
+        .form-footer-link:hover {
+            opacity: 0.7;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .form-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .brand-name {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body>
+    <div class="form-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <img src="../assets/icon.ico" alt="Pareeksha">
+            </div>
+            <h1 class="brand-name">Pareeksha</h1>
+            <p class="subtitle">Create your account</p>
+        </div>
 
-    <div class="form-container w-full max-w-md">
-        <header class="header text-center mb-6">
-            <h1>Create Your Account</h1>
-            <p id="status-message" class="text-center text-sm mt-2 h-5 transition-colors duration-300"></p>
-        </header>
+        <div class="step-indicator">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+        </div>
 
-        <form id="signup-form" class="space-y-4">
+        <div id="alert" class="alert"></div>
+
+        <form id="signup-form">
             <div id="step-1" class="form-step active">
-                <label for="email" class="block mb-2 font-medium text-gray-600">Email Address</label>
-                <input type="email" id="email" class="form-input" placeholder="teacher@example.com" required>
-                <button type="button" id="next-to-step-2" class="btn btn-primary !mt-6">Next</button>
+                <div class="input-group">
+                    <label for="email" class="form-label">Email address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="form-input" 
+                        placeholder="name@example.com" 
+                        required 
+                        autocomplete="email"
+                    >
+                </div>
+                <button type="button" class="btn btn-primary" id="next-step-2">
+                    Continue
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
             </div>
 
             <div id="step-2" class="form-step">
-                 <div class="flex justify-between items-center mb-4">
-                    <button type="button" id="back-to-step-1" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Back</button>
+                <button type="button" class="back-btn" id="back-step-1">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </button>
+                
+                <div class="input-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required 
+                            autocomplete="new-password"
+                        >
+                        <button type="button" class="password-toggle" id="toggle-password">
+                            <svg id="eye-open" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <svg id="eye-closed" class="hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-1.563 3.029m0 0l-2.145-2.145"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-                <label for="password" class="block mb-2 font-medium text-gray-600">Password</label>
-                 <div class="relative">
-                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500">
-                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
-                        <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-1.563 3.029m0 0l-2.145-2.145" /></svg>
-                    </button>
+                
+                <div class="input-group">
+                    <label for="confirm-password" class="form-label">Confirm password</label>
+                    <input 
+                        type="password" 
+                        id="confirm-password" 
+                        class="form-input" 
+                        placeholder="••••••••" 
+                        required 
+                        autocomplete="new-password"
+                    >
                 </div>
-                <label for="confirm-password" class="block mb-2 mt-4 font-medium text-gray-600">Confirm Password</label>
-                <input type="password" id="confirm-password" class="form-input" placeholder="••••••••" required>
-                <button type="button" id="next-to-step-3" class="btn btn-primary !mt-6">Next</button>
-            </div>
-
-            <div id="step-3" class="form-step">
-                <div class="flex justify-between items-center mb-4">
-                    <button type="button" id="back-to-step-2" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Back</button>
-                </div>
-                <label for="name" class="block mb-2 font-medium text-gray-600">Full Name</label>
-                <input type="text" id="name" class="form-input" placeholder="e.g., Jane Doe" required>
-                <button type="button" id="next-to-step-4" class="btn btn-primary !mt-6">Next</button>
+                
+                <button type="button" class="btn btn-primary" id="next-step-3">
+                    Continue
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
             </div>
             
-            <div id="step-4" class="form-step">
-                 <div class="flex justify-between items-center mb-4">
-                    <button type="button" id="back-to-step-3" class="text-sm font-semibold text-blue-600 hover:underline">&larr; Back</button>
+            <div id="step-3" class="form-step">
+                <button type="button" class="back-btn" id="back-step-2">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </button>
+                
+                <div class="input-group">
+                    <label for="name" class="form-label">Full name</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        class="form-input" 
+                        placeholder="John Doe" 
+                        required 
+                        autocomplete="name"
+                    >
                 </div>
-                <div class="flex justify-center mb-4 rounded-lg p-1 bg-gray-200">
-                    <button type="button" id="work-toggle" class="w-1/2 py-2 text-sm font-semibold rounded-md bg-white text-blue-600">Work</button>
-                    <button type="button" id="institution-toggle" class="w-1/2 py-2 text-sm font-semibold text-gray-600">Institution</button>
+                
+                <div class="input-group">
+                    <label for="institution" class="form-label">Institution</label>
+                    <input 
+                        type="text" 
+                        id="institution" 
+                        class="form-input" 
+                        placeholder="University of Example" 
+                        required 
+                        autocomplete="organization"
+                    >
                 </div>
-
-                <div id="work-fields">
-                    <label for="company" class="block mb-2 font-medium text-gray-600">Company</label>
-                    <input type="text" id="company" class="form-input mb-4" placeholder="e.g., Acme Corp">
-                    <label for="work-location" class="block mb-2 font-medium text-gray-600">Location</label>
-                    <input type="text" id="work-location" class="form-input" placeholder="e.g., New York, NY">
+                
+                <div class="input-group">
+                    <label for="location" class="form-label">Location</label>
+                    <input 
+                        type="text" 
+                        id="location" 
+                        class="form-input" 
+                        placeholder="New York, NY" 
+                        required 
+                        autocomplete="address-level2"
+                    >
                 </div>
-
-                <div id="institution-fields" class="hidden">
-                    <label for="institution-name" class="block mb-2 font-medium text-gray-600">College/School</label>
-                    <input type="text" id="institution-name" class="form-input mb-4" placeholder="e.g., State University">
-                    <label for="institution-location" class="block mb-2 font-medium text-gray-600">Location</label>
-                    <input type="text" id="institution-location" class="form-input" placeholder="e.g., Springfield, IL">
-                </div>
-
-                <button type="submit" id="signup-btn" class="btn btn-primary !mt-6">Create Account</button>
+                
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                    <span id="submit-text">Create account</span>
+                    <div class="spinner" style="display: none;"></div>
+                </button>
             </div>
         </form>
-        <p class="text-center text-sm text-gray-600 mt-6">
-            Already have an account? <a href="./login.html" class="font-semibold text-blue-600 hover:underline">Log in here</a>.
-        </p>
+
+        <div class="form-footer">
+            <p class="form-footer-text">
+                Already have an account? 
+                <a href="./login.html" class="form-footer-link">Sign in</a>
+            </p>
+        </div>
     </div>
 
     <script type="module">
-        import { auth, db, appId, createUserWithEmailAndPassword, doc, setDoc } from '../firebase-init.js';
+        // 🚨 CRITICAL FIX: Import actual Firebase functions from the unified init file.
+        import {
+            auth,
+            db,
+            createUserWithEmailAndPassword,
+            doc,
+            setDoc,
+            serverTimestamp, // Used for 'createdAt' field
+            appId // Used to construct the path '/artifacts/{appId}/users/{uid}/profile/details'
+        } from '../firebase-init.js';
 
-        const signupForm = document.getElementById('signup-form');
-        const statusMessage = document.getElementById('status-message');
-        const signupBtn = document.getElementById('signup-btn');
-
+        // Elements
+        const form = document.getElementById('signup-form');
+        const alert = document.getElementById('alert');
         const steps = {
-            '1': document.getElementById('step-1'),
-            '2': document.getElementById('step-2'),
-            '3': document.getElementById('step-3'),
-            '4': document.getElementById('step-4'),
+            1: document.getElementById('step-1'),
+            2: document.getElementById('step-2'),
+            3: document.getElementById('step-3')
         };
+        const dots = document.querySelectorAll('.step-dot');
         
-        let signupData = { type: 'work' }; // Default type
+        let currentStep = 1;
+        let formData = { type: 'institution' };
 
-        function navigateTo(step) {
+        // Navigation
+        function goToStep(step) {
+            currentStep = step;
             Object.values(steps).forEach(s => s.classList.remove('active'));
             steps[step].classList.add('active');
+            
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i + 1 === step) dot.classList.add('active');
+                else if (i + 1 < step) dot.classList.add('completed');
+            });
+            
+            hideAlert();
         }
 
-        // --- Navigation ---
-        document.getElementById('next-to-step-2').addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            if (email) { signupData.email = email; navigateTo('2'); } 
-            else { setStatus('Please enter a valid email.', 'red'); }
-        });
-        document.getElementById('back-to-step-1').addEventListener('click', () => navigateTo('1'));
+        // Alert
+        function showAlert(message, type) {
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+        }
 
-        document.getElementById('next-to-step-3').addEventListener('click', () => {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            if (password.length < 6) { setStatus('Password must be at least 6 characters.', 'red'); return; }
-            if (password !== confirmPassword) { setStatus('Passwords do not match.', 'red'); return; }
-            signupData.password = password;
-            navigateTo('3');
-        });
-        document.getElementById('back-to-step-2').addEventListener('click', () => navigateTo('2'));
+        function hideAlert() {
+            alert.classList.remove('show');
+        }
 
-        document.getElementById('next-to-step-4').addEventListener('click', () => {
-            const name = document.getElementById('name').value;
-            if (name) { signupData.name = name; navigateTo('4'); }
-            else { setStatus('Please enter your full name.', 'red'); }
-        });
-        document.getElementById('back-to-step-3').addEventListener('click', () => navigateTo('3'));
+        // Loading
+        function setLoading(loading) {
+            const btn = document.getElementById('submit-btn');
+            const text = document.getElementById('submit-text');
+            const spinner = btn.querySelector('.spinner');
+            
+            btn.disabled = loading;
+            text.textContent = loading ? 'Creating account...' : 'Create account';
+            spinner.style.display = loading ? 'block' : 'none';
+        }
 
-        // --- Step 4 Toggles ---
-        const workToggle = document.getElementById('work-toggle');
-        const institutionToggle = document.getElementById('institution-toggle');
-        workToggle.addEventListener('click', () => {
-            signupData.type = 'work';
-            workToggle.className = 'w-1/2 py-2 text-sm font-semibold rounded-md bg-white text-blue-600';
-            institutionToggle.className = 'w-1/2 py-2 text-sm font-semibold text-gray-600';
-            document.getElementById('work-fields').classList.remove('hidden');
-            document.getElementById('institution-fields').classList.add('hidden');
-        });
-        institutionToggle.addEventListener('click', () => {
-            signupData.type = 'institution';
-            institutionToggle.className = 'w-1/2 py-2 text-sm font-semibold rounded-md bg-white text-blue-600';
-            workToggle.className = 'w-1/2 py-2 text-sm font-semibold text-gray-600';
-            document.getElementById('institution-fields').classList.remove('hidden');
-            document.getElementById('work-fields').classList.add('hidden');
-        });
-        
-        // --- Password Visibility ---
-        const togglePasswordBtn = document.getElementById('toggle-password');
-        togglePasswordBtn.addEventListener('click', () => {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            document.getElementById('eye-open').classList.toggle('hidden');
-            document.getElementById('eye-closed').classList.toggle('hidden');
-        });
+        // Validation
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
 
-        // --- Form Submission ---
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            signupBtn.disabled = true;
-            setStatus('Creating account...', 'gray');
-
-            // Collect data from the final step
-            if (signupData.type === 'work') {
-                signupData.company = document.getElementById('company').value;
-                signupData.location = document.getElementById('work-location').value;
-            } else {
-                signupData.institution = document.getElementById('institution-name').value;
-                signupData.location = document.getElementById('institution-location').value;
+        // Step 1 -> 2
+        document.getElementById('next-step-2').addEventListener('click', () => {
+            const email = document.getElementById('email').value.trim();
+            
+            if (!email) {
+                showAlert('Please enter your email address', 'error');
+                return;
             }
+            if (!validateEmail(email)) {
+                showAlert('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            formData.email = email;
+            goToStep(2);
+        });
+
+        document.getElementById('back-step-1').addEventListener('click', () => goToStep(1));
+
+        // Password toggle
+        document.getElementById('toggle-password').addEventListener('click', () => {
+            const pwd = document.getElementById('password');
+            const confirm = document.getElementById('confirm-password');
+            const eyeOpen = document.getElementById('eye-open');
+            const eyeClosed = document.getElementById('eye-closed');
+            
+            const type = pwd.type === 'password' ? 'text' : 'password';
+            pwd.type = type;
+            confirm.type = type;
+            
+            eyeOpen.classList.toggle('hidden');
+            eyeClosed.classList.toggle('hidden');
+        });
+
+        // Step 2 -> 3
+        document.getElementById('next-step-3').addEventListener('click', () => {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm-password').value;
+            
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters', 'error');
+                return;
+            }
+            if (password !== confirm) {
+                showAlert('Passwords do not match', 'error');
+                return;
+            }
+            
+            formData.password = password;
+            goToStep(3);
+        });
+
+        document.getElementById('back-step-2').addEventListener('click', () => goToStep(2));
+
+        // Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const institution = document.getElementById('institution').value.trim();
+            const location = document.getElementById('location').value.trim();
+            
+            if (!name) {
+                showAlert('Please enter your name', 'error');
+                return;
+            }
+            if (!institution) {
+                showAlert('Please enter your institution', 'error');
+                return;
+            }
+            if (!location) {
+                showAlert('Please enter your location', 'error');
+                return;
+            }
+            
+            formData.name = name;
+            formData.institution = institution;
+            formData.location = location;
+            formData.company = null;
+            
+            setLoading(true);
+            showAlert('Creating your account...', 'info');
 
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
-                const user = userCredential.user;
-
-                const teacherDocRef = doc(db, `/artifacts/${appId}/teachers/${user.uid}`);
-                await setDoc(teacherDocRef, {
-                    name: signupData.name,
-                    email: user.email,
-                    type: signupData.type,
-                    company: signupData.company || null,
-                    institution: signupData.institution || null,
-                    location: signupData.location || null,
-                    createdAt: new Date()
+                // 1. Create the user in Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(
+                    auth, 
+                    formData.email, 
+                    formData.password
+                );
+                
+                // 2. Save the user profile data to Firestore
+                const docRef = doc(db, `/artifacts/${appId}/users/${userCredential.user.uid}/profile/details`);
+                
+                // 🚨 CRITICAL FIX: Use setDoc and serverTimestamp() for reliable saving
+                await setDoc(docRef, {
+                    name: formData.name,
+                    email: userCredential.user.email,
+                    type: formData.type,
+                    company: formData.company,
+                    institution: formData.institution,
+                    location: formData.location,
+                    createdAt: serverTimestamp() // FIX: Use serverTimestamp for Firestore consistency
                 });
 
-                setStatus('Account created successfully! Redirecting...', 'green');
-                setTimeout(() => { window.location.href = './login.html'; }, 2000);
+                showAlert('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = './login.html';
+                }, 2000);
 
             } catch (error) {
-                setStatus(error.message, 'red');
-                signupBtn.disabled = false;
+                setLoading(false);
+                let message = 'An error occurred. Please try again.';
+                
+                if (error.code) {
+                    if (error.code === 'auth/email-already-in-use') {
+                        message = 'This email is already registered.';
+                        goToStep(1);
+                    } else {
+                        // Simple cleaning of the error message for display
+                        message = error.code.replace('auth/', '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    }
+                } else if (error.message) {
+                    message = error.message;
+                }
+                
+                showAlert(message, 'error');
             }
         });
-        
-        function setStatus(message, color) {
-            statusMessage.textContent = message;
-            statusMessage.className = `text-center text-sm mt-2 h-5 text-${color}-600`;
-        }
     </script>
 </body>
 </html>

@@ -1,0 +1,25 @@
+{
+  "name": "pareeksha-electron-app",
+  "version": "1.0.0",
+  "description": "Desktop version of the Pareeksha examination platform.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package-win": "electron-packager . Pareeksha --platform=win32 --arch=x64 --out=dist --overwrite",
+    "package-mac": "electron-packager . Pareeksha --platform=darwin --arch=x64 --out=dist --overwrite"
+  },
+  "keywords": [
+    "electron",
+    "pareeksha",
+    "firebase"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "node": "^22.21.0"
+  }
+}

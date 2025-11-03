@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Exam Results - Pareeksha</title> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* BASE STYLES copied from result.html/dashboard.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; 
+            color: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+        header {
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #ffffff; 
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-content {
+            /* This 1rem 0 padding matches result.html and controls the header height */
+            display: flex;
+            /* 🟢 CRITICAL FIX: Ensure all children (Logo block and Back button) are perfectly centered */
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 1rem 0;
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        /* Logo Size Fix (Copied from result.html) */
+        .logo-icon {
+            width: 64px; 
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-color: transparent; 
+            border-radius: 0;
+        }
+        .logo-icon img {
+            max-width: 200%;
+            max-height: 190%;
+            display: block;
+        }
+        /* End Logo Fix */
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #000000;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: #4b5563;
+            font-weight: 500;
+            cursor: pointer;
+            /* Added to ensure icon and text are centered */
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            color: #000000;
+        }
+        
+        /* Standardized Main Content Padding (Matches result.html: 3rem 0) */
+        .main-content {
+            flex-grow: 1; 
+            padding: 3rem 0; 
+        }
+        
+        /* Compact header spacing for title area */
+        .results-header {
+            margin-bottom: 0; 
+        }
+        .results-header h1 {
+            font-size: 2.5rem; 
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            line-height: 1.1;
+        }
+        .results-header p {
+            color: #6b7280;
+            font-size: 1.125rem; 
+        }
+
+        /* Container for title and download button */
+        .title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem; 
+        }
+
+        /* New Table/List styles */
+        .results-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        #results-list {
+            margin-top: 1.5rem;
+        }
+        /* UPDATED GRID LAYOUT: 1fr (RollNo) 2fr (Name) 1fr (Score) 1fr (Status) */
+        .result-item {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr 1fr; 
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            align-items: center;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .result-item-header {
+            font-weight: 700;
+            color: #000000;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #000000;
+        }
+        .roll-no {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .student-name {
+            font-weight: 600;
+        }
+        .score-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #059669; /* Green for score */
+            text-align: right;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        /* Status Colors */
+        .status-passed { background-color: #d1fae5; color: #059669; } /* Green */
+        .status-failed { background-color: #fee2e2; color: #ef4444; } /* Red */
+        .status-suspicious { background-color: #e5e7eb; color: #000000; } /* Black/Gray */
+
+        #loading-message {
+            text-align: center;
+            padding: 5rem;
+            font-size: 1.25rem;
+            color: #4b5563;
+        }
+
+        /* Download Icon Button Style */
+        #download-btn {
+            background-color: #000000;
+            color: #ffffff;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        #download-btn:hover {
+            background-color: #1f2937;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        #download-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container"> 
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <img src="../assets/icon.ico" alt="Pareeksha Logo">
+                    </div>
+                    <span class="logo-text">Pareeksha</span>
+                </div>
+                <div>
+                    <a href="./result.html" id="back-to-results-btn" class="back-btn">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Exam Overview
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+            <div id="loading-message">Loading student results...</div>
+
+            <div id="results-content" style="display: none;">
+                
+                <div class="title-container">
+                    <div class="results-header">
+                        <h1 id="exam-name">Exam Student Scores</h1> 
+                        <p id="exam-details"></p>
+                    </div>
+
+                    <button id="download-btn" title="Download Marksheet (CSV)">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 002-2v-4M16 11l-4 4-4-4M12 3v12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="results-card">
+                    <h2>Student List</h2>
+                    <div id="results-list">
+                        <div class="result-item result-item-header">
+                            <div>Roll No.</div>
+                            <div>Student Name</div>
+                            <div style="text-align: right;">Score</div>
+                            <div style="text-align: center;">Status</div>
+                        </div>
+                        </div>
+                    <p id="no-results-message" style="display: none; margin-top: 1.5rem; color: #6b7280;">No students have submitted this exam yet.</p>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import {
+            db,
+            doc,
+            getDoc,
+            collection,
+            getDocs,
+            query,
+            where, 
+            orderBy 
+        } from '../firebase-init.js'; 
+
+        const resultsContent = document.getElementById('results-content');
+        const loadingMessage = document.getElementById('loading-message');
+        const resultsList = document.getElementById('results-list');
+        const backToResultsBtn = document.getElementById('back-to-results-btn');
+        const noResultsMessage = document.getElementById('no-results-message');
+        const downloadBtn = document.getElementById('download-btn');
+        const TOTAL_MARKS = 50; 
+        
+        let allStudentResults = []; // Global array to hold fetched data for download
+
+        function getExamIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // Function to determine the Status based on score
+        function getStatus(score) {
+            if (score === null || score === undefined) {
+                return { text: 'Suspicious Activity', class: 'status-suspicious' };
+            }
+            const numericScore = parseFloat(score);
+            
+            if (numericScore >= 20) {
+                return { text: 'Passed', class: 'status-passed' };
+            } else if (numericScore >= 1 && numericScore <= 19) {
+                return { text: 'Failed', class: 'status-failed' };
+            } else {
+                 // Covers 0 marks if score is explicitly set to 0
+                return { text: 'Failed', class: 'status-failed' }; 
+            }
+        }
+
+        function renderStudentResults(results, totalMarks) {
+            
+            // Store results globally before sorting/rendering
+            allStudentResults = results;
+
+            // Clear previous items but keep the header
+            const header = resultsList.querySelector('.result-item-header');
+            resultsList.innerHTML = '';
+            resultsList.appendChild(header);
+
+            if (results.length === 0) {
+                noResultsMessage.style.display = 'block';
+                downloadBtn.disabled = true;
+                return;
+            }
+            noResultsMessage.style.display = 'none';
+            downloadBtn.disabled = false;
+
+            // Perform client-side sorting by rollNo
+            results.sort((a, b) => {
+                if (a.rollNo < b.rollNo) return -1;
+                if (a.rollNo > b.rollNo) return 1;
+                return 0;
+            });
+
+            results.forEach(student => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                const score = student.score !== undefined ? student.score : null;
+                const status = getStatus(score);
+                const scoreDisplay = score !== null ? `${score}/${totalMarks}` : '--';
+
+                resultItem.innerHTML = `
+                    <div class="roll-no">${student.rollNo || 'N/A'}</div>
+                    <div class="student-name">${student.studentName || 'Anonymous Student'}</div>
+                    <div class="score-value" style="color: ${status.class.includes('failed') ? '#ef4444' : '#059669'};">${scoreDisplay}</div>
+                    <div class="status-badge ${status.class}">${status.text}</div>
+                `;
+                resultsList.appendChild(resultItem);
+            });
+        }
+
+        async function initViewResultsPage() {
+            const examId = getExamIdFromUrl();
+            
+            if (!examId) {
+                loadingMessage.textContent = "Error: No Exam ID provided.";
+                return;
+            }
+
+            backToResultsBtn.href = `./result.html?id=${examId}`;
+
+            try {
+                // 1. Fetch Exam Details (for name and total marks)
+                const examDocRef = doc(db, 'exams', examId);
+                const examDoc = await getDoc(examDocRef);
+
+                if (!examDoc.exists()) {
+                    loadingMessage.textContent = "Error: Exam not found.";
+                    return;
+                }
+                const examDetails = examDoc.data();
+                
+                // 🟢 Set Title using Exam Name
+                document.getElementById('exam-name').textContent = `${examDetails.examName || 'Exam'} Student Scores`;
+                document.getElementById('page-title').textContent = `${examDetails.examName || 'Exam'} Student Scores - Pareeksha`;
+                
+                const examTotalMarks = examDetails.totalMarks || TOTAL_MARKS;
+
+                // 2. Fetch Student Submissions from the 'registrations' collection
+                loadingMessage.textContent = "Fetching student submission data...";
+                
+                const submissionsRef = collection(db, 'registrations');
+                
+                const submissionsQuery = query(
+                    submissionsRef, 
+                    where('examId', '==', examId)
+                );
+                
+                const submissionsSnap = await getDocs(submissionsQuery);
+                
+                const studentResults = submissionsSnap.docs.map(doc => {
+                    const data = doc.data();
+                    
+                    const score = data.score !== undefined ? data.score : null;
+
+                    return {
+                        studentName: data.name || 'N/A', 
+                        rollNo: data.rollno || data.email || 'zzzz', 
+                        email: data.email || 'N/A', 
+                        examType: data.examType || 'N/A', 
+                        score: score
+                    };
+                });
+                
+                // 3. Render Results (and perform client-side sorting)
+                renderStudentResults(studentResults, examTotalMarks);
+
+                // 4. Show Content
+                loadingMessage.style.display = 'none';
+                resultsContent.style.display = 'block';
+
+            } catch (error) {
+                console.error("Failed to load student results:", error);
+                loadingMessage.textContent = `An error occurred while loading results: ${error.message}`;
+            }
+        }
+
+        // --- Download Functionality ---
+        downloadBtn.addEventListener('click', () => {
+            if (allStudentResults.length === 0) {
+                alert('No data to download.');
+                return;
+            }
+
+            const examName = document.getElementById('exam-name').textContent.replace(' Student Scores', '');
+            const totalMarks = TOTAL_MARKS; // Use the fixed constant for the download file
+
+            // 1. Define CSV headers
+            let csvContent = "Roll No,Student Name,Email,Exam Type,Score,Total Marks,Status\n";
+
+            // 2. Map data rows
+            allStudentResults.forEach(student => {
+                const status = getStatus(student.score).text;
+                const score = student.score !== null ? student.score : 'N/A';
+                
+                const row = [
+                    student.rollNo,
+                    `"${student.studentName.replace(/"/g, '""')}"`, 
+                    student.email,
+                    student.examType,
+                    score,
+                    totalMarks,
+                    status
+                ].join(',');
+                
+                csvContent += row + "\n";
+            });
+
+            // 3. Create Blob and download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            
+            // Create a temporary link element for downloading
+            if (link.download !== undefined) { 
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `${examName}_Marksheet.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                // Fallback for older browsers
+                alert("Your browser does not support automatic downloads. Please manually save the following content as a .csv file:\n\n" + csvContent);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initViewResultsPage);
+    </script>
+</body>
+</html>

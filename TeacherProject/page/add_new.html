@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Exam - Pareeksha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* BASE STYLES - Matched to Dashboard */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* MATCHED: Light gray background from index.html */
+            background-color: #f9fafb; 
+            color: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* CONTAINER FOR MAIN CONTENT */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+        /* --- HEADER STYLES (COPIED FROM DASHBOARD) --- */
+        header {
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #ffffff; 
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            padding: 1rem 0;
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-color: transparent; 
+            border-radius: 0;
+        }
+        .logo-icon img {
+            max-width: 200%;
+            max-height: 190%;
+            display: block;
+        }
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #000000;
+        }
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        /* --- END HEADER STYLES --- */
+
+        /* MAIN CONTENT SECTION - Set to fill remaining vertical space */
+        .main-content {
+            /* Fills the remaining vertical space */
+            flex-grow: 1; 
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+            /* ADDED: Display flex to allow content centering or stretching if desired */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Inner container to hold form card and center it if height allows */
+        .main-content .container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertically centers the form card if the viewport is tall */
+        }
+
+        /* Page Title/Header for the form */
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            flex-shrink: 0; /* Prevents title from shrinking */
+        }
+        .page-title h1 {
+            color: #000000; 
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .page-title p {
+            color: #6b7280; 
+            font-size: 1.125rem;
+        }
+
+        /* --- PROGRESS INDICATOR --- */
+        .progress-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 3rem; 
+            flex-shrink: 0; /* Prevents indicator from shrinking */
+        }
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .progress-step span {
+            color: #000000 !important; 
+            font-weight: 500;
+        }
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e5e7eb; 
+            color: #4b5563;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .progress-circle.active {
+            background-color: #000000; 
+            color: #ffffff;
+            border-color: #000000;
+        }
+        .progress-line {
+            width: 60px;
+            height: 2px;
+            background-color: #d1d5db; 
+        }
+        /* --- END PROGRESS INDICATOR --- */
+
+        /* Form Card */
+        .form-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 0.5rem;
+        }
+        .section-description {
+            color: #4b5563;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #000000; 
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+        .datetime-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .datetime-group {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* --- RADIO GROUP --- */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .radio-option {
+            position: relative;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .radio-option:hover {
+            border-color: #000000;
+            background-color: #f3f4f6; 
+        }
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        .radio-option input[type="radio"]:checked + .radio-content {
+            color: #000000; 
+        }
+        .radio-option input[type="radio"]:checked ~ .radio-indicator {
+            background-color: #000000;
+            border-color: #000000;
+        }
+        .radio-option input[type="radio"]:checked ~ .radio-indicator::after {
+            opacity: 1;
+        }
+        .radio-option.selected {
+            border-color: #000000;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .radio-content {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+        .radio-indicator {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.2s;
+            margin-top: 2px;
+        }
+        .radio-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .radio-text {
+            flex: 1;
+        }
+        .radio-title {
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 0.25rem;
+            font-size: 1.125rem;
+        }
+        .radio-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        /* --- END RADIO GROUP --- */
+
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        /* Style for the Back button to Dashboard */
+        .back-to-dashboard-btn {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem; 
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            display: block; 
+        }
+        .back-to-dashboard-btn:hover {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+        /* Button Group inside form-section (Next/Back) */
+        .btn {
+            flex: 1;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background-color: #000000;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #1f2937;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #000000;
+        }
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* Success Message - REMOVED, replaced by redirect */
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container" style="max-width: 1200px; padding: 0 1.5rem;"> 
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="logo-icon" id="logo-placeholder">
+                        <img src="../assets/icon.ico" alt="Pareeksha Logo">
+                    </div>
+                    <span class="logo-text">Pareeksha</span>
+                </div>
+                
+                <div class="user-actions">
+                    </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="page-title">
+                <h1>Create New Exam</h1>
+                <p>Set up your exam details and preferences in two easy steps</p>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-step">
+                    <div class="progress-circle active" id="progress1">1</div>
+                    <span>Details</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <div class="progress-circle" id="progress2">2</div>
+                    <span>Type</span>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-section active" id="step1">
+                    <h2 class="section-title">Exam Details</h2>
+                    <p class="section-description">Enter the basic information about your exam</p>
+
+                    <form id="examDetailsForm">
+                        <div class="form-group">
+                            <label class="form-label" for="examName">Exam Name *</label>
+                            <input 
+                                type="text" 
+                                id="examName" 
+                                class="form-input" 
+                                placeholder="e.g., Mathematics Final Exam 2025"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Opening Date & Time *</label>
+                            <div class="datetime-group">
+                                <input 
+                                    type="date" 
+                                    id="openingDate" 
+                                    class="form-input"
+                                    required
+                                >
+                                <input 
+                                    type="time" 
+                                    id="openingTime" 
+                                    class="form-input"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Closing Date & Time *</label>
+                            <div class="datetime-group">
+                                <input 
+                                    type="date" 
+                                    id="closingDate" 
+                                    class="form-input"
+                                    required
+                                >
+                                <input 
+                                    type="time" 
+                                    id="closingTime" 
+                                    class="form-input"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn btn-primary" id="next-step-2-btn">
+                                Next
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <a href="dashboard.html" class="back-to-dashboard-btn">
+                            Back to Dashboard
+                        </a>
+                    </form>
+                </div>
+
+                <div class="form-section" id="step2">
+                    <h2 class="section-title">Exam Type</h2>
+                    <p class="section-description">Choose the type of exam you want to create</p>
+
+                    <form id="examTypeForm">
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="examType" value="program" required>
+                                <div class="radio-content">
+                                    <div class="radio-indicator"></div>
+                                    <div class="radio-text">
+                                        <div class="radio-title">Program Based</div>
+                                        <div class="radio-description">Coding challenges and programming questions</div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="radio-option">
+                                <input type="radio" name="examType" value="mcq" required>
+                                <div class="radio-content">
+                                    <div class="radio-indicator"></div>
+                                    <div class="radio-text">
+                                        <div class="radio-title">MCQ Based</div>
+                                        <div class="radio-description">Multiple choice questions with single or multiple answers</div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label class="radio-option">
+                                <input type="radio" name="examType" value="theory" required>
+                                <div class="radio-content">
+                                    <div class="radio-indicator"></div>
+                                    <div class="radio-text">
+                                        <div class="radio-title">Theory Based</div>
+                                        <div class="radio-description">Descriptive answers and essay-type questions</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn btn-secondary" id="back-step-1-btn">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                                </svg>
+                                Back
+                            </button>
+                            <button type="button" class="btn btn-primary" id="submit-exam-btn">
+                                Create Exam
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="success-message" id="successMessage" style="display: none;">
+                    <div class="success-icon">
+                        <svg width="48" height="48" fill="none" stroke="#ffffff" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h2 class="success-title">Exam Created Successfully!</h2>
+                    <p class="success-text">Your exam has been saved and is ready to use.</p>
+                    <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">
+                        Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { 
+            db, 
+            auth, 
+            onAuthStateChanged, 
+            collection, 
+            addDoc, 
+            updateDoc, 
+            doc,
+            serverTimestamp 
+        } from '../firebase-init.js'; 
+
+        // --- DOM Elements & State ---
+        const nextStep2Btn = document.getElementById('next-step-2-btn');
+        const backStep1Btn = document.getElementById('back-step-1-btn');
+        const submitExamBtn = document.getElementById('submit-exam-btn');
+        const examNameInput = document.getElementById('examName'); // Get the exam name input
+
+        window.examData = {}; 
+        
+        // --- Navigation Functions ---
+        
+        function goToStep2() {
+            // Validate Step 1
+            const examName = examNameInput.value; // Use the stored DOM element
+            const openingDate = document.getElementById('openingDate').value;
+            const openingTime = document.getElementById('openingTime').value;
+            const closingDate = document.getElementById('closingDate').value;
+            const closingTime = document.getElementById('closingTime').value;
+
+            if (!examName || !openingDate || !openingTime || !closingDate || !closingTime) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Validate that closing date is after opening date
+            const openingDateTime = new Date(openingDate + 'T' + openingTime);
+            const closingDateTime = new Date(closingDate + 'T' + closingTime);
+
+            if (closingDateTime <= openingDateTime) {
+                alert('Closing date and time must be after opening date and time');
+                return;
+            }
+
+            // Store data
+            window.examData = {
+                examName,
+                openingDate,
+                openingTime,
+                closingDate,
+                closingTime,
+                openingDateTime: openingDateTime.toISOString(),
+                closingDateTime: closingDateTime.toISOString()
+            };
+
+            // Navigate to Step 2
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('progress1').classList.remove('active');
+            document.getElementById('progress2').classList.add('active');
+        }
+
+        function goToStep1() {
+            // Navigate back to Step 1 (Details)
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('progress2').classList.remove('active');
+            document.getElementById('progress1').classList.add('active');
+            
+            // Re-focus the exam name input when navigating back
+            setTimeout(() => {
+                examNameInput.focus();
+            }, 50);
+        }
+        
+        // Function to generate a simple, unique alphanumeric ID
+        function generateUniqueAccessId(length = 8) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            const randomBytes = typeof crypto !== 'undefined' && crypto.getRandomValues ? 
+                crypto.getRandomValues(new Uint8Array(length)) : 
+                Array.from({ length }, () => Math.floor(Math.random() * chars.length));
+
+            for (let i = 0; i < length; i++) {
+                const index = typeof crypto !== 'undefined' && crypto.getRandomValues ? 
+                    randomBytes[i] % chars.length : 
+                    randomBytes[i];
+                result += chars[index];
+            }
+            return result;
+        }
+
+        // --- Main Submit Logic ---
+        async function submitExam() {
+            submitExamBtn.disabled = true;
+            submitExamBtn.innerHTML = `Creating...`;
+            
+            const examTypeInput = document.querySelector('input[name="examType"]:checked');
+            
+            if (!examTypeInput) {
+                alert('Please select an exam type');
+                submitExamBtn.disabled = false;
+                submitExamBtn.innerHTML = `Create Exam <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>`;
+                return;
+            }
+            
+            const examType = examTypeInput.value;
+
+            // Authentication Check 
+            if (!auth.currentUser) {
+                alert('Authentication Error: Your session expired. Please log in again.');
+                window.location.href = '../auth/login.html'; 
+                return;
+            }
+            
+            // Add required metadata
+            window.examData.examType = examType;
+            window.examData.creatorId = auth.currentUser.uid; 
+            window.examData.isStarted = false; 
+
+            try {
+                // 1. Save exam metadata to Firebase's 'exams' collection
+                const docRef = await addDoc(collection(db, "exams"), {
+                    ...window.examData,
+                    timestamp: serverTimestamp()
+                });
+                
+                const examId = docRef.id;
+
+                // 2. Generate and save the unique Access ID
+                const accessId = generateUniqueAccessId(8);
+                
+                // Update the newly created document with the unique accessId
+                await updateDoc(doc(db, "exams", examId), {
+                    accessId: accessId
+                });
+
+                console.log(`Exam created with ID: ${examId}, Access ID: ${accessId}`);
+                
+                let redirectUrl;
+
+                // --- CONDITIONAL REDIRECTION LOGIC ---
+                if (examType === 'program') {
+                    redirectUrl = `./exam/exam.html?id=${examId}&accessId=${accessId}&new=true`; 
+                } else if (examType === 'mcq') {
+                    redirectUrl = `./exam/mcq.html?id=${examId}&accessId=${accessId}&new=true`;
+                } else if (examType === 'theory') {
+                    redirectUrl = `./theory_setup.html?id=${examId}&accessId=${accessId}&new=true`; 
+                } else {
+                    redirectUrl = `./dashboard.html`; 
+                }
+                // --------------------------------------------------------
+
+                // Redirect to the appropriate exam creation page
+                window.location.href = redirectUrl;
+
+            } catch (error) {
+                console.error("Error creating exam: ", error);
+                alert('Error creating exam. Please check Firebase rules and network status.');
+                
+                // Re-enable button on failure
+                submitExamBtn.disabled = false;
+                submitExamBtn.innerHTML = `Create Exam <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>`;
+            }
+        }
+
+        // --- Event Listeners and Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach module functions to button elements
+            nextStep2Btn.addEventListener('click', goToStep2);
+            backStep1Btn.addEventListener('click', goToStep1);
+            submitExamBtn.addEventListener('click', submitExam);
+            
+            // Add initial authentication check for page access
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    // User is not logged in, redirect to login page
+                    alert("You must be logged in to access the exam creation page.");
+                    window.location.href = '../auth/login.html'; 
+                } else {
+                    // FIX: Explicitly focus the input after a small delay once authenticated, 
+                    // ensuring all potential overlays/focus issues are cleared.
+                    setTimeout(() => {
+                        if (examNameInput) {
+                            examNameInput.focus();
+                        }
+                    }, 200); 
+                }
+            });
+
+            // Add visual feedback for radio selection
+            document.addEventListener('change', function(e) {
+                if (e.target.name === 'examType') {
+                    document.querySelectorAll('.radio-option').forEach(option => {
+                        option.classList.remove('selected');
+                    });
+                    e.target.closest('.radio-option').classList.add('selected');
+                }
+            });
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('openingDate').setAttribute('min', today);
+            document.getElementById('closingDate').setAttribute('min', today);
+        });
+    </script>
+</body>
+</html>

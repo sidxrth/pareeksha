@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Exam Results - Pareeksha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        /* BASE STYLES - Matched to Dashboard */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; 
+            color: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+        /* --- HEADER STYLES (COPIED FROM DASHBOARD) --- */
+        header {
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #ffffff; 
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            padding: 1rem 0;
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+               .logo-icon {
+            width: 64px; 
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-color: transparent; 
+            border-radius: 0;
+        }
+        .logo-icon img {
+            max-width: 200%;
+            max-height: 190%;
+            display: block;
+        }
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #000000;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: #4b5563;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            color: #000000;
+        }
+        /* --- END HEADER STYLES --- */
+
+        .main-content {
+            flex-grow: 1; 
+            padding: 3rem 0;
+        }
+        
+        .results-header {
+            display: flex; /* Flex container for title and icon */
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .results-header-text {
+             flex-grow: 1;
+        }
+        .results-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .results-header p {
+            color: #6b7280;
+            font-size: 1.125rem;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .metric-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #000000;
+        }
+        .metric-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #000000;
+        }
+
+        /* Chart Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr; /* 1/3 for Pie, 2/3 for Bar */
+            gap: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .chart-box {
+            padding: 1rem;
+            background-color: #f9fafb;
+            border-radius: 8px;
+        }
+        .chart-box h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        #loading-message {
+            text-align: center;
+            padding: 5rem;
+            font-size: 1.25rem;
+            color: #4b5563;
+        }
+
+        /* Link Icon Style */
+        #link-icon-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.2s;
+            flex-shrink: 0;
+            margin-left: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #link-icon-btn:hover {
+            background-color: #1f2937;
+            transform: scale(1.05);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .modal-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .link-display {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            word-break: break-all;
+            margin-bottom: 1.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-align: left;
+            border: 1px dashed #d1d5db;
+            color: #000000;
+        }
+        .copy-btn {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #1f2937;
+        }
+        /* NEW STYLE: View Exam Button */
+        .view-exam-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            background-color: #000000; /* Primary accent color */
+            color: #ffffff;
+            border: none;
+            margin-top: 2rem; 
+            width: 100%; 
+        }
+        .view-exam-btn:hover {
+            background-color: #1f2937;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container"> 
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <img src="../assets/icon.ico" alt="Pareeksha Logo">
+                    </div>
+                    <span class="logo-text">Pareeksha</span>
+                </div>
+                <div>
+                    <a href="./dashboard.html" class="back-btn">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+            <div id="loading-message">Loading exam results...</div>
+
+            <div id="results-content" style="display: none;">
+                
+                <div class="results-header">
+                    <div class="results-header-text">
+                        <h1 id="exam-name">Exam Name Placeholder</h1>
+                        <p id="exam-details">Type: <span id="exam-type"></span></p>
+                    </div>
+
+                    <!-- NEW: Link Icon Button -->
+                    <button id="link-icon-btn" title="Get Student Access Link">
+                         <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                             <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"></path>
+                             <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"></path>
+                         </svg>
+                    </button>
+                    
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Total Students Attended</div>
+                        <div class="metric-value" id="total-students">--</div>
+                    </div>
+                    <div class="metric-card" style="border-left-color: #10b981;">
+                        <div class="metric-title">Pass Percentage</div>
+                        <div class="metric-value" id="pass-percentage">--</div>
+                    </div>
+                    <div class="metric-card" style="border-left-color: #f59e0b;">
+                        <div class="metric-title">Average Score</div>
+                        <div class="metric-value" id="average-score">--</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-box">
+                        <h3>Pass/Fail Distribution (Score out of 50)</h3>
+                        <canvas id="passFailChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3>Student Score Distribution (Out of 50)</h3>
+                        <canvas id="scoreDistributionChart"></canvas>
+                    </div>
+                </div>
+                
+                <a id="view-exam-link" href="#" class="view-exam-btn">
+                    View Student Scores
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-left: 0.5rem;">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path>
+                    </svg>
+                </a>
+                
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- Modal for Access Link -->
+    <div id="link-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Student Access Link</h3>
+            <div id="access-link-display" class="link-display"></div>
+            <button id="copy-link-btn" class="copy-btn">
+                Copy Link
+            </button>
+            <p id="copy-status" class="text-sm mt-3 h-4 text-green-600"></p>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // NOTE: Firebase access must be established via firebase-init.js
+        import {
+            db,
+            doc,
+            getDoc,
+            collection,
+            getDocs,
+            query,
+            where
+        } from '../firebase-init.js'; 
+
+        const resultsContent = document.getElementById('results-content');
+        const loadingMessage = document.getElementById('loading-message');
+        const viewExamLink = document.getElementById('view-exam-link');
+        const linkIconBtn = document.getElementById('link-icon-btn');
+        
+        // Modal elements
+        const modalOverlay = document.getElementById('link-modal-overlay');
+        const accessLinkDisplay = document.getElementById('access-link-display');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const copyStatus = document.getElementById('copy-status');
+
+        // --- CONSTANTS ---
+        const TOTAL_MARKS = 50; 
+        const PASS_THRESHOLD = 20;
+
+        let examAccessId = null; // Variable to store the fetched access ID
+
+        function getExamIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // --- MODAL & LINK LOGIC ---
+
+        function openLinkModal(accessId) {
+            // 🟢 MODIFICATION: Use the mock domain and accessId format
+            const studentUrl = `https://pareeksha.com/?access=${accessId}`; 
+            
+            accessLinkDisplay.textContent = studentUrl;
+            modalOverlay.style.display = 'flex';
+            copyStatus.textContent = ''; // Clear previous status
+        }
+        
+        modalOverlay.addEventListener('click', (e) => {
+            // Close modal if clicked outside the content area
+            if (e.target === modalOverlay) {
+                modalOverlay.style.display = 'none';
+            }
+        });
+        
+        copyLinkBtn.addEventListener('click', () => {
+            const linkText = accessLinkDisplay.textContent;
+            
+            // Fallback for document.execCommand('copy')
+            const tempInput = document.createElement('textarea');
+            tempInput.value = linkText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            copyStatus.textContent = 'Copied to clipboard!';
+            
+            // Hide status after a delay
+            setTimeout(() => {
+                copyStatus.textContent = '';
+                modalOverlay.style.display = 'none';
+            }, 1500);
+        });
+
+        linkIconBtn.addEventListener('click', () => {
+             if (examAccessId) {
+                 openLinkModal(examAccessId);
+             } else {
+                 alert('Error: Access Link not found for this exam. Ensure the exam was created correctly.');
+             }
+        });
+
+
+        // --- FIREBASE FETCHING ---
+        async function fetchStudentResults(examId) {
+            const submissionsRef = collection(db, 'registrations');
+            
+            const submissionsQuery = query(
+                submissionsRef, 
+                where('examId', '==', examId)
+            );
+            const submissionsSnap = await getDocs(submissionsQuery);
+            
+            return submissionsSnap.docs.map(doc => {
+                const data = doc.data();
+                const score = data.score !== undefined && data.score !== null ? parseFloat(data.score) : null;
+                
+                return {
+                    score: score,
+                    status: score !== null && score >= PASS_THRESHOLD ? 'Pass' : (score !== null ? 'Fail' : 'NoScore') 
+                };
+            }).filter(r => r.score !== null);
+        }
+
+        async function initResultsPage() {
+            const examId = getExamIdFromUrl();
+            if (!examId) {
+                loadingMessage.textContent = "Error: No Exam ID provided.";
+                return;
+            }
+
+            try {
+                // 1. Fetch Exam Details (including the new accessId)
+                const examDocRef = doc(db, 'exams', examId);
+                const examDoc = await getDoc(examDocRef);
+
+                if (!examDoc.exists()) {
+                    loadingMessage.textContent = "Error: Exam not found.";
+                    return;
+                }
+                const examDetails = examDoc.data();
+                
+                // --- Store the fetched access ID ---
+                examAccessId = examDetails.accessId || null; 
+                linkIconBtn.disabled = !examAccessId;
+                
+                // 2. Fetch Student Results (REAL DATA)
+                const studentResults = await fetchStudentResults(examId);
+
+                // 3. Calculate Metrics
+                const totalStudents = studentResults.length;
+                const totalScore = studentResults.reduce((sum, result) => sum + result.score, 0);
+                
+                const averageScore = totalStudents > 0 ? (totalScore / totalStudents).toFixed(2) : '0.00';
+                
+                const passingStudents = studentResults.filter(r => r.score >= PASS_THRESHOLD).length;
+                const failingStudents = totalStudents - passingStudents;
+                const passPercentage = totalStudents > 0 ? ((passingStudents / totalStudents) * 100).toFixed(2) + '%' : '0.00%';
+
+                // 4. Update DOM Metrics
+                document.getElementById('exam-name').textContent = examDetails.examName;
+                document.getElementById('page-title').textContent = `${examDetails.examName} Results - Pareeksha`;
+                document.getElementById('exam-type').textContent = examDetails.examType.toUpperCase();
+                document.getElementById('total-students').textContent = totalStudents;
+                document.getElementById('pass-percentage').textContent = passPercentage;
+                document.getElementById('average-score').textContent = averageScore;
+
+                // Update the View Student Scores link
+                viewExamLink.href = `./viewresult.html?id=${examId}`;
+
+                // 5. Render Charts
+                renderPassFailChart(passingStudents, failingStudents);
+                renderScoreDistributionChart(studentResults.map(r => r.score), TOTAL_MARKS);
+
+                // 6. Show Content
+                loadingMessage.style.display = 'none';
+                resultsContent.style.display = 'block';
+
+            } catch (error) {
+                console.error("Failed to load results:", error);
+                loadingMessage.textContent = `An error occurred: ${error.message}`;
+            }
+        }
+
+        function renderPassFailChart(passCount, failCount) {
+            new Chart(document.getElementById('passFailChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pass', 'Fail'],
+                    datasets: [{
+                        data: [passCount, failCount],
+                        backgroundColor: [
+                            '#10b981', 
+                            '#ef4444' 
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderScoreDistributionChart(scores, totalMarks) {
+            const buckets = [0, 11, 21, 31, 41, totalMarks + 1];
+            const labels = ["0-10", "11-20", "21-30", "31-40", "41-50"];
+            const counts = new Array(labels.length).fill(0);
+
+            scores.forEach(score => {
+                for (let i = 0; i < buckets.length - 1; i++) {
+                    if (score >= buckets[i] && score < buckets[i + 1]) {
+                        counts[i]++;
+                        break;
+                    }
+                }
+            });
+            
+            new Chart(document.getElementById('scoreDistributionChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: counts,
+                        backgroundColor: '#000000',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Student Count'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: `Score Range (Out of ${totalMarks})`
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initResultsPage);
+    </script>
+</body>
+</html>

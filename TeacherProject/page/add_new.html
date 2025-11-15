@@ -305,6 +305,35 @@
             color: #6b7280;
             font-size: 0.875rem;
         }
+        
+        /* ADDED STYLES FOR DISABLED OPTIONS */
+        .coming-soon-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background-color: #f59e0b; /* Amber/Orange */
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+
+        .radio-option.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            /* Prevents clicking the label from triggering the hidden radio input */
+            pointer-events: none; 
+        }
+        /* Re-enable pointer events for active inputs that are children of a disabled label */
+        .radio-option:not(.disabled) {
+            pointer-events: auto;
+        }
+        .radio-option.disabled input[type="radio"] {
+            cursor: not-allowed;
+        }
         /* --- END RADIO GROUP --- */
 
 
@@ -499,24 +528,26 @@
                                 </div>
                             </label>
 
-                            <label class="radio-option">
-                                <input type="radio" name="examType" value="mcq" required>
+                            <label class="radio-option disabled">
+                                <span class="coming-soon-badge">Coming Soon</span>
+                                <input type="radio" name="examType" value="mcq" required disabled>
                                 <div class="radio-content">
                                     <div class="radio-indicator"></div>
                                     <div class="radio-text">
                                         <div class="radio-title">MCQ Based</div>
-                                        <div class="radio-description">Multiple choice questions with single or multiple answers</div>
+                                        <div class="radio-description">Multiple choice questions (Currently unavailable)</div>
                                     </div>
                                 </div>
                             </label>
 
-                            <label class="radio-option">
-                                <input type="radio" name="examType" value="theory" required>
+                            <label class="radio-option disabled">
+                                <span class="coming-soon-badge">Coming Soon</span>
+                                <input type="radio" name="examType" value="theory" required disabled>
                                 <div class="radio-content">
                                     <div class="radio-indicator"></div>
                                     <div class="radio-text">
                                         <div class="radio-title">Theory Based</div>
-                                        <div class="radio-description">Descriptive answers and essay-type questions</div>
+                                        <div class="radio-description">Descriptive answers and essay-type questions (Currently unavailable)</div>
                                     </div>
                                 </div>
                             </label>
@@ -701,8 +732,10 @@
                 if (examType === 'program') {
                     redirectUrl = `./exam/exam.html?id=${examId}&accessId=${accessId}&new=true`; 
                 } else if (examType === 'mcq') {
+                    // This block is theoretically unreachable now due to the disabled HTML input, but kept for robustness.
                     redirectUrl = `./exam/mcq.html?id=${examId}&accessId=${accessId}&new=true`;
                 } else if (examType === 'theory') {
+                    // This block is theoretically unreachable now due to the disabled HTML input, but kept for robustness.
                     redirectUrl = `./theory_setup.html?id=${examId}&accessId=${accessId}&new=true`; 
                 } else {
                     redirectUrl = `./dashboard.html`; 
@@ -749,7 +782,7 @@
 
             // Add visual feedback for radio selection
             document.addEventListener('change', function(e) {
-                if (e.target.name === 'examType') {
+                if (e.target.name === 'examType' && !e.target.disabled) {
                     document.querySelectorAll('.radio-option').forEach(option => {
                         option.classList.remove('selected');
                     });

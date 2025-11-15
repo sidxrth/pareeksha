@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ... (styles remain the same) ... */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f0f4f8;
@@ -131,10 +132,13 @@
                          <input type="text" id="signup-name" class="form-input" placeholder="Sam Altman">
                     </div>
                     <div>
-                         <label for="signup-city" class="block mb-2 font-medium text-gray-600">Living City:</label>
-                         <input type="text" id="signup-city" class="form-input" placeholder="San Francisco">
-                    </div>
+                         <label for="signup-rollno" class="block mb-2 font-medium text-gray-600">Roll No:</label>
+                         <input type="text" id="signup-rollno" class="form-input" placeholder="A123456 or 123456">
+                         </div>
                 </div>
+                <button class="primary-btn mt-6 hidden" id="backToAccessBtn">
+                    Go Back to Access Link
+                </button>
                 <button class="primary-btn mt-6" id="completeSignupBtn">Complete Registration</button>
             </fieldset>
         </div>

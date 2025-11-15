@@ -7,10 +7,13 @@ const verifyOtpBtn = document.getElementById('verifyOtpBtn');
 const completeSignupBtn = document.getElementById('completeSignupBtn');
 const signupEmailInput = document.getElementById('signup-email');
 const signupNameInput = document.getElementById('signup-name');
-const signupCityInput = document.getElementById('signup-city');
+const signupRollNoInput = document.getElementById('signup-rollno'); // RollNo from auth/signup.html
 const otpInputs = document.querySelectorAll('#otp-inputs .otp-box');
 const statusMessage = document.getElementById('status-message');
 const otpMessage = document.getElementById('otp-message');
+
+// NEW: Selection for the back button
+const backToAccessBtn = document.getElementById('backToAccessBtn');
 
 function updateStatus(message, isError = false) {
     statusMessage.textContent = `> ${message}`;
@@ -89,47 +92,73 @@ verifyOtpBtn.addEventListener('click', async () => {
     }
 });
 
+// NEW: Handle back button click
+backToAccessBtn.addEventListener('click', () => {
+    // Navigate back to the index page (the exam access link page)
+    window.location.href = '../index.html'; 
+});
 
-// MODIFIED: 'exam' parameter is now read and sent to the server
+
 completeSignupBtn.addEventListener('click', async () => {
     const userName = signupNameInput.value;
-    const userCity = signupCityInput.value;
+    const userRollNo = signupRollNoInput.value;
     const userEmail = signupEmailInput.value;
-    
-    // --- MODIFICATION: Read the 'exam' and 'id' parameter from the URL ---
-    const urlParams = new URLSearchParams(window.location.search); 
-    const exam = urlParams.get('exam'); // examTypeSlug
-    const examId = urlParams.get('id'); // <-- NEW
-    // --- END MODIFICATION ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const examType = urlParams.get('exam'); 
+    const examId = urlParams.get('id'); 
 
-    if (!userName || !userCity) {
-        updateStatus('ERROR: Full Name and Living City are required.', true);
+    if (!userName || !userRollNo) {
+        updateStatus('ERROR: Full Name and Roll No are required.', true);
         return;
     }
+    
+    // Disable inputs and hide the back button at start of attempt
+    completeSignupBtn.disabled = true;
+    signupNameInput.disabled = true;
+    signupRollNoInput.disabled = true;
+    backToAccessBtn.classList.add('hidden');
 
     try {
         const response = await fetch('http://localhost:3000/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: userName, city: userCity, email: userEmail, exam: exam })
+            body: JSON.stringify({ 
+                name: userName, 
+                rollno: userRollNo, 
+                email: userEmail, 
+                examType: examType, 
+                examId: examId 
+            })
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
         
+        if (!response.ok) {
+            // CRITICAL: Handle duplicate enrollment error
+            if (data.message && data.message.includes('already registered for this examination')) {
+                updateStatus("ERROR: Already enrolled for this exam. Please use the button below to go back.", true);
+                
+                // Keep input fields disabled and show the Back button
+                backToAccessBtn.classList.remove('hidden');
+                
+                // Do NOT redirect
+                return; 
+            }
+            throw new Error(data.message); // Handle other server errors
+        }
+        
+        // --- SUCCESS PATH ---
         updateStatus(`REGISTRATION COMPLETE. Proceeding to biometric setup...`, false);
         
-        completeSignupBtn.disabled = true;
-        signupNameInput.disabled = true;
-        signupCityInput.disabled = true;
-
-        // Redirect to face setup page after a delay, carrying the exam type slug AND the exam ID
         setTimeout(() => {
-            // --- MODIFICATION: Pass the exam ID (`id`) in the URL ---
-            window.location.href = `../face.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(exam)}&id=${encodeURIComponent(examId)}`; 
-            // --- END MODIFICATION ---
+            window.location.href = `../face.html?email=${encodeURIComponent(userEmail)}&exam=${encodeURIComponent(examType)}&id=${encodeURIComponent(examId)}`;
         }, 2000);
 
     } catch (error) {
         updateStatus(`ERROR: ${error.message}`, true);
+        
+        // Re-enable input fields on failure (but keep the main button disabled)
+        signupNameInput.disabled = false;
+        signupRollNoInput.disabled = false;
+        completeSignupBtn.disabled = false; // Allow another attempt if it wasn't a duplicate error
     }
 });

@@ -827,8 +827,6 @@
                 if (response.ok) {
                     userOutput = data.output.trim(); // Capture clean output
                     
-                    const emptyOutput = (userOutput === "" && expectedOutput !== "");
-                    
                     if (userOutput === expectedOutput) {
                         outputTerminal.style.color = '#10b981';
                         outputTerminal.textContent = `> EXECUTION SUCCESS (EXIT CODE 0)
@@ -845,7 +843,6 @@ VERIFICATION: **Test Case PASSED.** Score: 50.`;
 > Input Sent: ${inputData.substring(0, 50)}...
 > Expected: ${expectedOutput}
 > Actual Output: ${userOutput}
-${emptyOutput ? "> NOTE: Output was empty. Did you use 'return' instead of a print function?" : ''}
 ---
 VERIFICATION: **Test Case FAILED.** Score determined by AI (1-49 marks).`;
                         isCorrect = false;
@@ -1013,12 +1010,12 @@ ${errorDetails}`;
             window.addEventListener('blur', handleWindowBlur);
             window.addEventListener('focus', handleWindowFocus);
             
-            // 2. NEW: ADD KEYDOWN LISTENER FOR SHORTCUTS (MODIFIED FOR PASTE BLOCKING)
+            // 2. NEW: ADD KEYDOWN LISTENER FOR SHORTCUTS (MODIFIED FOR PASTE)
             document.addEventListener('keydown', (e) => {
                  const isCtrlKey = e.ctrlKey || e.metaKey; // Handles Ctrl and Cmd (Mac)
                  
-                 // Block Copy (C), Cut (X), AND Paste (V)
-                 const isBlockingShortcut = ['c', 'x', 'v'].includes(e.key.toLowerCase());
+                 // Block Copy (C) and Cut (X) but ALLOW Paste (V)
+                 const isBlockingShortcut = ['c', 'x'].includes(e.key.toLowerCase());
                  
                  if (isCtrlKey && isBlockingShortcut) {
                      e.preventDefault(); 
@@ -1034,10 +1031,10 @@ ${errorDetails}`;
                  }
             });
             
-            // 3. ADD GENERIC CLIPBOARD BLOCKING LISTENERS (Blocks all copy/cut/paste attempts, including context menu)
+            // 3. ADD GENERIC CLIPBOARD BLOCKING LISTENERS (Paste listener removed, Copy/Cut retained)
             document.addEventListener('copy', (e) => e.preventDefault());
             document.addEventListener('cut', (e) => e.preventDefault());
-            document.addEventListener('paste', (e) => e.preventDefault()); 
+            // document.addEventListener('paste', (e) => e.preventDefault()); // <-- REMOVED to enable context menu paste
 
             if (window.electronAPI && window.electronAPI.enterFullScreen) {
                 window.electronAPI.enterFullScreen();

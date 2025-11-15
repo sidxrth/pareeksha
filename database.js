@@ -17,8 +17,7 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
         if (!dbExists) {
             initDb(db);
         } else {
-            // Ensure the 'score' column is present if the database already existed
-            // This is a common pattern for handling schema evolution in simple setups
+            // Ensure schema evolution for score and new exam fields
             checkAndAlterTable(db);
         }
     }
@@ -26,14 +25,15 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
 
 function initDb(db) {
     db.serialize(() => {
-        // Create the main user table with the new 'score' column
+        // --- MODIFICATION: Removed UNIQUE constraint from 'email' ---
         db.run(`
             CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
-                city TEXT,
-                email TEXT UNIQUE,
-                exam TEXT, 
+                rollno TEXT, 
+                email TEXT,                     /* FIX 1: REMOVED UNIQUE CONSTRAINT */
+                exam_type TEXT, 
+                exam_id TEXT,
                 face_descriptor TEXT,
                 score INTEGER 
             )
@@ -44,9 +44,9 @@ function initDb(db) {
                 console.log('Table [users] created successfully.');
             }
         });
+        // --- END MODIFICATION ---
 
-        // Create a simple table for OTPs (though currently managed in memory in server.js)
-        // This is good practice if you decide to move OTP persistence out of memory
+        // Create a simple table for OTPs
         db.run(`
             CREATE TABLE otp_codes (
                 email TEXT PRIMARY KEY,
@@ -62,29 +62,46 @@ function initDb(db) {
 }
 
 function checkAndAlterTable(db) {
-    // Check if the 'score' column exists and add it if it doesn't
-    db.get("PRAGMA table_info(users)", (err, row) => {
+    // Basic checks to ensure table structure evolution
+    db.all("PRAGMA table_info(users)", (err, rows) => {
         if (err) {
             console.error('Error checking users table info:', err.message);
             return;
         }
 
-        let columnExists = false;
-        db.all("PRAGMA table_info(users)", (err, rows) => {
-            if (rows) {
-                columnExists = rows.some(col => col.name === 'score');
-            }
+        const columnNames = rows ? rows.map(col => col.name) : [];
+        
+        // Add score column if missing
+        if (!columnNames.includes('score')) {
+            db.run("ALTER TABLE users ADD COLUMN score INTEGER", (err) => {
+                if (err) console.error('Error adding score column:', err.message);
+                else console.log('Added [score] column to [users] table.');
+            });
+        }
+        
+        // Add rollno column if missing (from previous modification)
+        if (!columnNames.includes('rollno')) {
+             db.run("ALTER TABLE users ADD COLUMN rollno TEXT", (err) => {
+                if (err) console.error('Error adding rollno column:', err.message);
+                else console.log('Added [rollno] column to [users] table.');
+            });
+        }
 
-            if (!columnExists) {
-                db.run("ALTER TABLE users ADD COLUMN score INTEGER", (err) => {
-                    if (err) {
-                        console.error('Error adding score column:', err.message);
-                    } else {
-                        console.log('Added [score] column to [users] table.');
-                    }
-                });
-            }
-        });
+        // --- MODIFICATION: Add exam_id and exam_type columns ---
+        if (!columnNames.includes('exam_id')) {
+             db.run("ALTER TABLE users ADD COLUMN exam_id TEXT", (err) => {
+                if (err) console.error('Error adding exam_id column:', err.message);
+                else console.log('Added [exam_id] column to [users] table.');
+            });
+        }
+        if (!columnNames.includes('exam_type')) {
+             // For existing DBs, this is tricky. We simply add exam_type.
+             db.run("ALTER TABLE users ADD COLUMN exam_type TEXT", (err) => {
+                if (err) console.error('Error adding exam_type column:', err.message);
+                else console.log('Added [exam_type] column to [users] table.');
+            });
+        }
+        // --- END MODIFICATION ---
     });
 }
 

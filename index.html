@@ -30,7 +30,7 @@
             color: #4a5568;
             font-size: 1.25rem;
         }
-        /* --- NEW SEARCH STYLES --- */
+        /* --- SEARCH STYLES --- */
         .search-container {
             position: absolute;
             top: 50%;
@@ -49,25 +49,19 @@
             background-color: #e2e8f0;
         }
         #search-bar {
-            width: 0;
-            padding: 0.5rem 0;
+            width: 250px; /* Default size for easy access */
+            padding: 0.5rem;
             border: none;
             border-bottom: 2px solid #2c5282;
             outline: none;
             font-size: 1rem;
             background-color: transparent;
             transition: all 0.4s ease-in-out;
-            opacity: 0;
-            visibility: hidden;
-            margin-left: 0.5rem;
-        }
-        #search-bar.active {
-            width: 250px;
-            padding: 0.5rem;
             opacity: 1;
             visibility: visible;
+            margin-left: 0.5rem;
         }
-        /* --- EXAM GRID STYLES --- */
+        /* --- EXAM GRID STYLES (Kept for the single card display) --- */
         .exam-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -80,37 +74,40 @@
             border-radius: 12px;
             padding: 2rem;
             text-align: center;
-            transition: all 0.3s ease-in-out;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             border: 1px solid #e2e8f0;
+            grid-column: 1 / -1; /* Make it span all columns */
         }
-        .exam-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 25px rgba(44, 82, 130, 0.15);
+        .exam-card.details {
+            text-align: left;
+            padding: 2.5rem;
+            max-width: 600px;
+            margin: 3rem auto 0;
+            transition: all 0.2s ease;
         }
-        .exam-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1.5rem;
-            background: linear-gradient(45deg, #4299e1, #3182ce);
-            -webkit-mask-image: var(--icon-url);
-            mask-image: var(--icon-url);
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
+        .exam-card.details:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 10px 25px rgba(44, 82, 130, 0.15);
         }
-        .exam-title {
-            font-size: 1.5rem;
-            font-weight: 600;
+        .exam-title-display {
+            font-size: 1.8rem;
+            font-weight: 700;
             color: #2d3748;
+            margin-bottom: 1rem;
         }
-        .exam-details {
-            font-size: 0.9rem;
-            color: #718096;
-            margin: 0.5rem 0 1.5rem;
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #2c5282;
         }
         .start-btn {
             background-color: #3182ce;
@@ -123,11 +120,16 @@
             font-weight: 600;
             width: 100%;
             border-radius: 8px;
+            text-align: center;
+        }
+        .start-btn.disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+            pointer-events: none;
         }
         .start-btn:hover {
             background-color: #2b6cb0;
         }
-        /* Loader and Message Styles */
         .loading-message {
             grid-column: 1 / -1;
             text-align: center;
@@ -135,161 +137,352 @@
             color: #718096;
             font-size: 1.1rem;
         }
+        .status-badge {
+            display: block;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-pending { background-color: #fffbeb; color: #92400e; }
+        .status-closed { background-color: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
     <div class="container">
         <header class="header text-center">
             <h1>Pareeksha</h1>
-            <p>Select the Exam</p>
+            <p>Enter Access Link to find your Exam</p>
             <div class="search-container">
                 <svg id="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#2c5282">
                     <title>magnify</title>
                     <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
                 </svg>
-                <input type="text" id="search-bar" placeholder="paste the link.">
+                <input type="text" id="search-bar" placeholder="paste the Access Link.">
             </div>
         </header>
 
         <main class="exam-grid" id="exam-grid-container">
-            <div id="loading-indicator" class="loading-message">Fetching available exams...</div>
-        </main>
+            <div id="loading-indicator" class="loading-message">Enter your Access Link above to locate your exam.</div>
+            
+            <div id="exam-details-card" class="exam-card details hidden">
+                <div id="exam-status-badge" class="status-badge"></div>
+                <h3 id="exam-title-display" class="exam-title-display"></h3>
+                <div id="exam-details-rows"></div>
+                <p id="exam-action-message" class="text-sm text-gray-600 mt-6 mb-4 text-center">Are you sure you want to start the authentication process for this exam?</p>
+                <a href="#" id="start-exam-button" class="start-btn">Start Authentication</a>
+            </div>
+            </main>
     </div>
 
     <script type="module">
-        // Import necessary Firebase functions
         import {
             db,
+            appId, // <-- FETCH THE APP ID
             collection,
-            getDocs,
             query,
-            orderBy
+            where,
+            getDocs,
+            doc,
+            getDoc
         } from './firebase-init.js';
 
         const searchIcon = document.getElementById('search-icon');
         const searchBar = document.getElementById('search-bar');
-        const gridContainer = document.getElementById('exam-grid-container');
         const loadingIndicator = document.getElementById('loading-indicator');
-
-        // Map examType to an icon URL (using the icons from the original index.html)
-        const iconMap = {
-            'program': 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M8,3L2.5,12L8,21H16L21.5,12L16,3H8M8.5,5H15.2L19.5,12L15.2,19H8.5L4.2,12L8.5,5Z%22/%3E%3C/svg%3E',
-            'mcq': 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,11V13H7V11H17M17,7V9H7V7H17M17,15V17H7V15H17Z%22/%3E%3C/svg%3E',
-            'theory': 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M1,3H23V5H19A2,2 0 0,1 17,7V17A4,4 0 0,1 13,21H7A4,4 0 0,1 3,17V7A2,2 0 0,1 1,5V3M5,7V17A2,2 0 0,0 7,19H13A2,2 0 0,0 15,17V7H5Z%22/%3E%3C/svg%3E',
-        };
+        const examDetailsCard = document.getElementById('exam-details-card');
+        const examStatusBadge = document.getElementById('exam-status-badge');
+        const examActionMessage = document.getElementById('exam-action-message');
+        const examTitleDisplay = document.getElementById('exam-title-display');
+        const examDetailsRows = document.getElementById('exam-details-rows');
+        const startExamButton = document.getElementById('start-exam-button');
 
         const typeMap = {
             'program': 'Programming Exam',
             'mcq': 'Multiple Choice Questions',
             'theory': 'Theory / Descriptive'
+        };
+
+        const fileMap = {
+            'program': 'exam/exam.html', 
+            'mcq': 'exam/mcq.html', 
+            'theory': 'exam/theory.html',
+            'c': 'exam.html',
+            'java': 'exam.html',
+            'python': 'exam.html',
+        };
+
+        // --- HELPER FUNCTION: Formats minutes into a human-readable string ---
+        function formatDurationReadable(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+
+            if (hours > 0 && mins > 0) {
+                return `${hours} hr ${mins} mins`;
+            } else if (hours > 0) {
+                return `${hours} hours`;
+            } else if (mins > 0) {
+                return `${mins} mins`;
+            }
+            return 'N/A';
+        }
+        
+        // --- HELPER FUNCTION: Convert Unix/Timestamp to Date object ---
+        function toDateObject(timestamp) {
+            if (typeof timestamp === 'number') {
+                // Assuming milliseconds for consistency
+                return new Date(timestamp);
+            }
+            if (timestamp && typeof timestamp === 'object' && typeof timestamp.toDate === 'function') {
+                return timestamp.toDate();
+            }
+            if (timestamp && typeof timestamp === 'string') {
+                 // Attempt to parse string format
+                return new Date(timestamp);
+            }
+            return null;
         }
 
-        function createExamCard(exam) {
-            const card = document.createElement('div');
-            card.className = 'exam-card';
+        // --- FUNCTION: Fetch Duration from Subcollection (Final Fix for N/A) ---
+        async function getDurationFromSubcollection(examId) {
+            try {
+                // Duration is stored inside the first document of the 'questions' subcollection.
+                const questionsRef = collection(db, "exams", examId, "questions");
+                const snapshot = await getDocs(questionsRef);
+                if (!snapshot.empty) {
+                    const firstQuestion = snapshot.docs[0].data();
+                    const durationObject = firstQuestion.duration;
+                    
+                    if (durationObject && durationObject.totalMinutes) {
+                        // Use String() -> parseInt() for robust number extraction (Final fix)
+                        const totalMinutes = parseInt(String(durationObject.totalMinutes)); 
+                        if (!isNaN(totalMinutes) && totalMinutes > 0) {
+                            return { totalMinutes };
+                        }
+                    }
+                }
+                return null;
+            } catch (err) {
+                console.error("Failed to fetch subcollection duration:", err);
+                return null;
+            }
+        }
+        
+        // --- FUNCTION: Fetch Creator Name (Final Fix) ---
+        async function getCreatorName(creatorId) {
+            if (!creatorId) return 'N/A (ID Missing)';
             
-            const examTypeSlug = exam.examType || 'program'; // Default to 'program'
-            const displayTitle = exam.examName || typeMap[examTypeSlug] || 'Untitled Exam';
+            try {
+                // The correct path is artifacts/{appId}/teachers
+                const teachersRef = collection(db, "artifacts", appId, "teachers");
+
+                // Assuming the creatorId is the user's email address (or UID used as email)
+                // We QUERY the nested 'teachers' subcollection where the 'email' field matches the creatorId.
+                const q = query(teachersRef, where("email", "==", creatorId)); 
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    const teacherData = snapshot.docs[0].data();
+                    // Assumes the teacher name is stored under the 'name' field
+                    return teacherData.name || `Unnamed User (Email: ${teacherData.email})`; 
+                }
+                
+                // Fallback: If query fails, try direct document ID lookup in the subcollection
+                const teacherRef = doc(db, "artifacts", appId, "teachers", creatorId);
+                const teacherSnap = await getDoc(teacherRef);
+                
+                if (teacherSnap.exists()) {
+                    const teacherData = teacherSnap.data();
+                    return teacherData.name || `Unnamed User (ID: ${creatorId})`;
+                }
+                
+                return 'N/A (User not found)';
+            } catch (err) {
+                // This is likely an index issue or a path error. Log the ID for debugging.
+                console.error(`Error fetching teacher name for ${creatorId}:`, err);
+                return 'N/A (Lookup Failed)';
+            }
+        }
+
+
+        async function displayExamDetails(examId, examData) {
+            const examTypeSlug = examData.examType || 'program';
             const displayType = typeMap[examTypeSlug] || 'General';
+
+            examTitleDisplay.textContent = examData.examName || `${displayType} (ID: ${examId})`;
+            examDetailsRows.innerHTML = '';
+
+            // 1. Fetch Duration and Creator Name concurrently
+            const [durationData, creatorName] = await Promise.all([
+                getDurationFromSubcollection(examId),
+                getCreatorName(examData.creatorId) // Use creatorId from the exam document
+            ]);
             
-            // Format duration/dates
-            let detailsText = '';
-            if (exam.duration && exam.duration.totalMinutes) {
-                detailsText = `${exam.duration.totalMinutes} Mins | Type: ${displayType}`;
-            } else if (exam.openingDateTime) {
-                 const date = new Date(exam.openingDateTime).toLocaleDateString();
-                 detailsText = `Starts: ${date} | Type: ${displayType}`;
+            // Convert timestamps to Date objects
+            const openingDate = toDateObject(examData.openingDateTime);
+            const closingDate = toDateObject(examData.closingDateTime);
+            const now = new Date();
+            let status = 'Pending'; // Default status
+            let statusClass = 'status-pending';
+            let actionMessage = 'Are you sure you want to start the authentication process for this exam?';
+            let isAvailable = false;
+
+            // 2. Check Exam Status
+            if (openingDate && now < openingDate) {
+                status = 'Scheduled';
+                isAvailable = false;
+                actionMessage = `This exam starts at ${openingDate.toLocaleString()}. Please try again then.`;
+            } else if (closingDate && now > closingDate) {
+                status = 'Closed';
+                statusClass = 'status-closed';
+                isAvailable = false;
+                actionMessage = 'The completion time for this exam has passed. Access is denied.';
             } else {
-                 detailsText = `Type: ${displayType}`;
+                status = 'Active';
+                statusClass = 'status-active';
+                isAvailable = true;
             }
 
-            // --- MODIFICATION: Pass the unique exam ID (`exam.id`) ---
-            const iconUrl = iconMap[examTypeSlug] || iconMap.program;
-            const startLink = `./auth/signup.html?exam=${examTypeSlug}&id=${exam.id}`;
-            // --- END MODIFICATION ---
 
-            card.innerHTML = `
-                <div class="exam-icon" style="--icon-url: url('${iconUrl}');"></div>
-                <h2 class="exam-title">${displayTitle}</h2>
-                <p class="exam-details">${detailsText}</p>
-                <a href="${startLink}" class="start-btn">Start Authentication</a>
-            `;
-            return card;
+            // 3. Process Duration
+            let formattedDuration = 'N/A';
+            if (durationData && durationData.totalMinutes) {
+                formattedDuration = formatDurationReadable(durationData.totalMinutes);
+            }
+            
+            // 4. Compile Details for display
+            const details = [
+                { label: 'Status', value: status },
+                { label: 'Exam Type', value: displayType },
+                { label: 'Duration', value: formattedDuration }, 
+                { label: 'Start Date/Time', value: openingDate ? openingDate.toLocaleString() : 'N/A' },
+                { label: 'End Date/Time', value: closingDate ? closingDate.toLocaleString() : 'N/A' },
+                { label: 'Created By', value: creatorName } 
+            ];
+
+            details.forEach(detail => {
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                row.innerHTML = `<span class="detail-label">${detail.label}:</span> <span class="detail-value">${detail.value}</span>`;
+                examDetailsRows.appendChild(row);
+            });
+            
+            // 5. Update UI based on Status
+            examStatusBadge.textContent = `Status: ${status}`;
+            examStatusBadge.className = `status-badge ${statusClass}`;
+            examActionMessage.textContent = actionMessage;
+            
+            if (isAvailable) {
+                const examFileName = fileMap[examTypeSlug] || fileMap.program;
+                startExamButton.href = `./auth/signup.html?exam=${examTypeSlug}&id=${examId}`;
+                startExamButton.classList.remove('disabled');
+                startExamButton.textContent = 'Start Authentication';
+                examActionMessage.textContent = 'Exam is open. Proceed to authentication to begin.';
+            } else {
+                startExamButton.href = '#';
+                startExamButton.classList.add('disabled');
+                startExamButton.textContent = 'Exam Not Available';
+            }
+            
+            examDetailsCard.classList.remove('hidden');
+            loadingIndicator.classList.add('hidden');
         }
 
-        async function loadExams() {
-            gridContainer.innerHTML = '';
-            loadingIndicator.textContent = 'Fetching available exams...';
-            gridContainer.appendChild(loadingIndicator);
-            
-            const now = new Date();
-            const upcomingExams = [];
+        function displayError(message) {
+            loadingIndicator.classList.remove('hidden');
+            examDetailsCard.classList.add('hidden');
+            loadingIndicator.textContent = `ERROR: ${message}`;
+            loadingIndicator.style.color = '#c53030';
+        }
+
+        async function handleAccessIdSearch(accessId) {
+            if (!accessId) {
+                return displayError('Access Link/ID cannot be empty.');
+            }
+
+            loadingIndicator.textContent = `Searching for exam with Access Link: ${accessId}...`;
+            loadingIndicator.style.color = '#718096';
+            loadingIndicator.classList.remove('hidden');
+            examDetailsCard.classList.add('hidden');
 
             try {
-                // Query for all exams, ordered by their opening date
-                const q = query(collection(db, "exams"), orderBy("openingDateTime", "asc"));
-                const querySnapshot = await getDocs(q);
+                const cleanId = accessId.replace(/https?:\/\/pareeksha\.com\/\?access=/i, '').trim();
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const openingTime = data.openingDateTime ? new Date(data.openingDateTime) : null;
-                    const closingTime = data.closingDateTime ? new Date(data.closingDateTime) : null;
-                    
-                    // Only show exams that are active or upcoming (not yet closed)
-                    if (closingTime && closingTime > now) {
-                        upcomingExams.push({ id: doc.id, ...data });
-                    }
-                    // Also consider showing non-timed exams (no closing date) if the opening date has passed
-                    if (!closingTime && openingTime && openingTime < now) {
-                         upcomingExams.push({ id: doc.id, ...data });
-                    }
-                });
-
-                gridContainer.innerHTML = ''; // Clear loading message
-
-                if (upcomingExams.length === 0) {
-                    gridContainer.innerHTML = '<div class="loading-message">No upcoming exams are currently scheduled.</div>';
-                } else {
-                    upcomingExams.forEach(exam => {
-                        gridContainer.appendChild(createExamCard(exam));
-                    });
+                if (cleanId.length < 5) {
+                    throw new Error('Invalid Access Link format.');
                 }
+
+                const examsRef = collection(db, "exams");
+                let examDoc = null;
+
+                // --- ATTEMPT 1: Query by Access ID field value ---
+                const fieldNamesToTry = ["accessID", "accessId"]; 
+                
+                for (const fieldName of fieldNamesToTry) {
+                    const q = query(examsRef, where(fieldName, "==", cleanId));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        examDoc = querySnapshot.docs[0];
+                        break; 
+                    }
+                }
+
+                if (examDoc) {
+                    await displayExamDetails(examDoc.id, examDoc.data());
+                    return;
+                }
+
+                // --- ATTEMPT 2 (Fallback): Look up by Document ID (in case user pasted the long ID) ---
+                const examRef = doc(db, "exams", cleanId);
+                const examSnap = await getDoc(examRef);
+                
+                if (examSnap.exists()) {
+                    await displayExamDetails(cleanId, examSnap.data());
+                    return;
+                }
+
+                // If all fail:
+                displayError(`Exam with Access Link '${cleanId}' not found.`);
             } catch (error) {
-                console.error("Error loading exams from Firebase:", error);
-                gridContainer.innerHTML = `<div class="loading-message" style="color: #c53030;">ERROR: Failed to load exams. Please ensure Firebase is initialized and connected.</div>`;
+                console.error("CRITICAL FIREBASE QUERY ERROR:", error);
+                displayError(`Failed to lookup exam. Please check the ID or console for database errors.`);
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadExams();
-            
-            // --- Search Bar Logic (Existing) ---
-            searchIcon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                searchBar.classList.toggle('active');
-                if (searchBar.classList.contains('active')) {
-                    searchBar.focus();
-                } else {
-                    document.querySelectorAll('.exam-card').forEach(card => card.style.display = 'block');
-                }
-            });
+            loadingIndicator.classList.remove('hidden');
 
-            document.addEventListener('click', (e) => {
-                if (e.target !== searchIcon && e.target !== searchBar) {
-                    searchBar.classList.remove('active');
-                }
-            });
-
-            searchBar.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                document.querySelectorAll('.exam-card').forEach(card => {
-                    const title = card.querySelector('.exam-title').textContent.toLowerCase();
-                    if (title.includes(searchTerm)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
+            const searchHandler = (e) => {
+                const searchTerm = e.target.value.trim();
+                if (e.key === 'Enter' || e.type === 'change') {
+                     if (searchTerm.includes('?access=')) {
+                        const urlMatch = searchTerm.match(/[?&]access=([^&]+)/);
+                        if (urlMatch && urlMatch[1]) {
+                             e.target.value = urlMatch[1];
+                             handleAccessIdSearch(urlMatch[1]);
+                        } else {
+                            handleAccessIdSearch(searchTerm);
+                        }
+                    } else if (searchTerm) {
+                        handleAccessIdSearch(searchTerm);
                     }
-                });
+                }
+            };
+
+            searchBar.addEventListener('change', searchHandler);
+            searchBar.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchHandler(e);
+                }
+            });
+
+            searchIcon.addEventListener('click', (e) => {
+                 e.stopPropagation();
+                 searchBar.focus();
             });
         });
     </script>

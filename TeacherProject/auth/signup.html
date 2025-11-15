@@ -493,7 +493,7 @@
             doc,
             setDoc,
             serverTimestamp, // Used for 'createdAt' field
-            appId // Used to construct the path '/artifacts/{appId}/users/{uid}/profile/details'
+            appId // Used to construct the path '/artifacts/{appId}/teachers/{uid}'
         } from '../firebase-init.js';
 
         // Elements
@@ -641,10 +641,12 @@
                     formData.password
                 );
                 
-                // 2. Save the user profile data to Firestore
-                const docRef = doc(db, `/artifacts/${appId}/users/${userCredential.user.uid}/profile/details`);
+                // 2. Save the teacher profile data to Firestore in the new location: artifacts/{appId}/teachers/{uid}
+                // This replaces the old path 'artifacts/{appId}/users/{uid}/profile/details'
+                // and the incorrect path 'teachers/{uid}'
+                const docRef = doc(db, 'artifacts', appId, 'teachers', userCredential.user.uid);
                 
-                // 🚨 CRITICAL FIX: Use setDoc and serverTimestamp() for reliable saving
+                // CRITICAL FIX: Use setDoc and serverTimestamp() for reliable saving
                 await setDoc(docRef, {
                     name: formData.name,
                     email: userCredential.user.email,

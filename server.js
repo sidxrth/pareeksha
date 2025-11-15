@@ -1,17 +1,31 @@
 // server.js
 const express = require('express');
 const nodemailer = require('nodemailer');
-const db = require('./database.js'); 
+const db = require('./database.js'); // Assuming database.js is created and exports the DB object
 const path = require('path');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-// --- NEW MODULES FOR CODE EXECUTION ---
+
+// --- MODULES FOR CODE EXECUTION ---
 const { exec } = require('child_process');
 const fs = require('fs');
-// --- END NEW MODULES ---
+// --- END MODULES ---
+
+// -----------------------------------------------------------
+// --- Firebase Admin SDK Setup (ACTIVATED) ---
+// -----------------------------------------------------------
+const admin = require('firebase-admin');
+const serviceAccount = require("./serviceAccountKey.json"); 
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const firestore = admin.firestore();
+// -----------------------------------------------------------
+
 
 // --- Gemini API Key ---
-// Replace "YOUR_API_KEY" with your actual Gemini API key
 const genAI = new GoogleGenerativeAI("AIzaSyB0mT4FcMneMkFRaZXbgjQ7nIGosPoXF9c");
 
 const app = express();
@@ -24,13 +38,16 @@ let otpStore = {};
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
-    auth: { user: 'fdecorder@gmail.com', pass: 'xdwlnjwbhhhghtnl' }
+    auth: { 
+        user: 'fdecoder@gmail.com', 
+        pass: 'xdwlnjwbhhhghtnl' 
+    }
 });
 
 // Function to send the completion email
 function sendCompletionEmail(email, examName, score) {
     const mailOptions = {
-        from: 'fdecorder@gmail.com',
+        from: 'fdecoder@gmail.com',
         to: email,
         subject: `Pareeksha Exam Submission: ${examName}`,
         text: `Dear Student,\n\nYour ${examName} exam has been submitted and graded.\n\nYour score: ${score} / 50\n\nThank you for taking the exam.\n\nSincerely,\nThe Pareeksha Team`
@@ -55,7 +72,7 @@ app.post('/generate-otp', (req, res) => {
     otpStore[email] = { otp, timestamp: Date.now() };
     console.log(`\n\n>>>> OTP for ${email}: ${otp} <<<<\n\n`);
     const mailOptions = {
-        from: 'fdecorder@gmail.com',
+        from: 'fdecoder@gmail.com',
         to: email,
         subject: 'Your Pareeksha Verification Code',
         text: `Your OTP for registration is: ${otp}. It is valid for 5 minutes.`
@@ -84,17 +101,59 @@ app.post('/verify-otp', (req, res) => {
     res.status(200).json({ message: 'OTP verified.' });
 });
 
+// MODIFICATION: Update /register endpoint to perform uniqueness check and save to both DBs
 app.post('/register', (req, res) => {
-    const { name, city, email, exam } = req.body;
-    const sql = `INSERT INTO users (name, city, email, exam) VALUES (?, ?, ?, ?)`;
-    db.run(sql, [name, city, email, exam], function(err) {
+    const { name, rollno, email, examType, examId } = req.body;
+
+    // --- 1. UNQIUENESS CHECK (SQLite) ---
+    const checkSql = `
+        SELECT id FROM users 
+        WHERE exam_id = ? AND (email = ? OR rollno = ?)
+    `;
+
+    db.get(checkSql, [examId, email, rollno], (err, row) => {
         if (err) {
-            console.error('DB Error (Register):', err.message);
-            return res.status(500).json({ message: 'Failed to register.' });
+            console.error('DB Error (Uniqueness Check):', err.message);
+            return res.status(500).json({ message: `Database error during registration check: ${err.message}` });
         }
-        res.status(201).json({ message: 'User registered.' });
+        
+        if (row) {
+            return res.status(400).json({ message: 'Error: This student is already registered for this examination.' });
+        }
+        
+        // --- 2. Store user details in SQLite (Primary storage) ---
+        const sqliteSql = `INSERT INTO users (name, rollno, email, exam_type, exam_id, face_descriptor) VALUES (?, ?, ?, ?, ?, ?)`;
+        db.run(sqliteSql, [name, rollno, email, examType, examId, null], function(sqliteErr) {
+            if (sqliteErr) {
+                console.error('DB Error (Register to SQLite):', sqliteErr.message);
+                return res.status(500).json({ message: `Failed to register user to SQLite: ${sqliteErr.message}` });
+            }
+            
+            // --- 3. Store details in Firebase (Secondary storage) ---
+            try {
+                const firebaseDocId = `${email}_${examId}`;
+                
+                console.log(`[FIREBASE ACTION - REGISTER] Preparing registration data for document: ${firebaseDocId}`);
+
+                firestore.collection('registrations').doc(firebaseDocId).set({
+                    name: name,
+                    rollno: rollno,
+                    email: email,
+                    examId: examId,
+                    examType: examType,
+                    score: null, 
+                    timestamp: admin.firestore.FieldValue.serverTimestamp() 
+                }, { merge: false });
+
+            } catch (firebaseError) {
+                console.error('FIREBASE WRITE FAILED:', firebaseError);
+            }
+            
+            res.status(201).json({ message: 'User registered.' });
+        });
     });
 });
+
 
 app.post('/store-face-data', (req, res) => {
     const { email, faceDescriptors } = req.body;
@@ -132,31 +191,31 @@ app.get('/get-user-face-data', (req, res) => {
 });
 
 
-// --- NEW ENDPOINT: CODE COMPILATION AND EXECUTION ---
+// --- CODE COMPILATION AND EXECUTION (MODIFIED FOR CLEANING AND EXECUTION FIX) ---
 app.post('/compile-and-run', (req, res) => {
-    const { userCode, language, inputData } = req.body;
+    let { userCode, language, inputData } = req.body;
     const tempFileName = `temp_${Date.now()}`;
     let fileExtension, compileCommand, runCommand;
 
-    // 1. Determine commands and file extension
+    // FIX 1: Sanitize code to remove invisible Unicode/stray characters
+    const cleanUserCode = userCode.replace(/[^\x00-\x7F\n\r\t]/g, '');
+
     switch (language.toLowerCase()) {
         case 'c':
             fileExtension = 'c';
             compileCommand = `gcc ${tempFileName}.c -o ${tempFileName}.out`;
-            runCommand = `./${tempFileName}.out`;
+            // FIX 2: Use executable name directly (Windows execution fix)
+            runCommand = `${tempFileName}.out`; 
             break;
         case 'java':
             fileExtension = 'java';
-            // Use tempFileName for the Java class name to match the file name.
             compileCommand = `javac ${tempFileName}.java`;
-            runCommand = `java ${tempFileName}`;
+            runCommand = `java -cp . ${tempFileName}`; 
             break;
         case 'python':
             fileExtension = 'py';
             compileCommand = null; 
-            // --- FIX: Use 'python' instead of 'python3' for better Windows compatibility ---
             runCommand = `python ${tempFileName}.py`; 
-            // ----------------------------------------------------------------------------------
             break;
         default:
             return res.status(400).json({ message: 'Unsupported language for compilation.' });
@@ -164,16 +223,13 @@ app.post('/compile-and-run', (req, res) => {
 
     const fullFileName = `${tempFileName}.${fileExtension}`;
     
-    // For Java, replace the class name in the code to match the temporary filename
     const codeToWrite = language.toLowerCase() === 'java' 
-        ? userCode.replace(/class\s+Solution/g, `class ${tempFileName}`)
-        : userCode;
+        ? cleanUserCode.replace(/class\s+Solution/g, `class ${tempFileName}`)
+        : cleanUserCode;
 
-    // 2. Write code to a temporary file
     fs.writeFile(fullFileName, codeToWrite, (err) => {
         if (err) return res.status(500).json({ error: 'Failed to write temporary file.' });
 
-        // 3. Define Cleanup function
         const cleanup = () => {
             try {
                 fs.unlinkSync(fullFileName);
@@ -187,121 +243,158 @@ app.post('/compile-and-run', (req, res) => {
             }
         };
 
-        // 4. Execution logic: Compile (if needed) then Run
         const executeCode = (execCmd, input) => {
-            // Set a timeout of 5 seconds for execution
             const executionProcess = exec(execCmd, { timeout: 5000 }, (runtimeErr, stdout, stderr) => {
                 cleanup();
 
                 if (runtimeErr) {
-                    // Check for timeout
+                    const commandOutput = `Command failed: ${execCmd}\n${stderr || stdout}`;
                     if (runtimeErr.signal === 'SIGTERM' || runtimeErr.killed) {
                         return res.status(400).json({ status: 'TIMEOUT', output: 'Execution Timed Out (Max 5s).', error: 'Process execution exceeded 5 seconds. This usually indicates an infinite loop or high complexity.' });
                     }
-                    // Capture runtime errors
-                    return res.status(400).json({ status: 'RUNTIME_ERROR', output: stderr || stdout, error: runtimeErr.message });
+                    return res.status(400).json({ status: 'RUNTIME_ERROR', output: commandOutput, error: runtimeErr.message });
                 }
                 
-                // Return successful output (stdout)
                 res.status(200).json({ status: 'SUCCESS', output: stdout.trim(), error: stderr.trim() });
             });
 
-            // Pipe input data to the process
             if (input) {
                 executionProcess.stdin.write(input);
                 executionProcess.stdin.end();
             }
         };
 
-        // 5. Start Compilation or Execution
         if (compileCommand) {
             exec(compileCommand, { timeout: 3000 }, (compileErr, stdout, stderr) => {
                 if (compileErr) {
                     cleanup();
-                    // Send back compilation errors
-                    return res.status(400).json({ status: 'COMPILE_ERROR', output: stderr || stdout, error: compileErr.message });
+                    const commandOutput = `Command failed: ${compileCommand}\n${stderr || stdout}`;
+                    return res.status(400).json({ status: 'COMPILE_ERROR', output: commandOutput, error: compileErr.message });
                 }
                 
-                // If compilation succeeds, run the compiled executable
                 executeCode(runCommand, inputData);
             });
         } else {
-            // For interpreted languages (Python)
             executeCode(runCommand, inputData);
         }
     });
 });
 
-// --- EXAM SUBMISSION & SCORING ---
+
+// MODIFICATION: Update /submit-exam endpoint (Robust AI Grading Logic)
 app.post('/submit-exam', async (req, res) => {
-    const { email, exam, userCode, timeRemaining, isCorrect, submittedQuestion } = req.body;
+    const { email, exam, userCode, timeRemaining, isCorrect, submittedQuestion, examId } = req.body; 
     let score = 0;
 
     const examFullName = exam === 'program' ? 'Programming Exam' : 
                          exam === 'mcq' ? 'Multiple Choice Exam' :
                          exam === 'theory' ? 'Theory Exam' : submittedQuestion?.title || 'Unknown Exam';
 
-    // 1. Scoring Logic: Award 50 if client-side check passed AND time remains (PERFECT SCORE PATH)
+    // 1. Calculate Score (Gemini AI grading logic)
     if (isCorrect && timeRemaining > 0) {
+        // Path 1: Test Case Passed (Full Score)
         score = 50;
-    } else {
-        // 2. AI Evaluation Logic for partial/incorrect scores (AI GRADING PATH)
+    } else if (isCorrect === false && timeRemaining > 0) {
+        // Path 2: Test Case Failed (Score 1-49, graded by AI)
+        
+        let aiScore = 1; // Default minimum score if everything fails
+
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
             
+            const testInput = submittedQuestion.test_input || 'N/A';
+            const expectedOutput = submittedQuestion.expected_output || 'N/A';
+            const actualOutput = submittedQuestion.actual_output || 'N/A'; 
+            const problemDescription = submittedQuestion.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+
             const prompt = `
-                You are an automated grading system. Evaluate the student's submitted code against the provided programming question.
+                You are an automated grading system. The student's code failed the hardcoded test case. Evaluate the code based on the detailed context provided.
                 
-                The maximum score is 50.
+                The final score must be in the range of 1 to 49 (inclusive). A score of 50 is reserved for passing all test cases.
                 
-                --- QUESTION DETAILS ---
-                Title: ${submittedQuestion.title}
-                Description: ${submittedQuestion.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ')}
+                --- EVALUATION CONTEXT ---
+                Question Title: ${submittedQuestion.title}
+                Problem Description: ${problemDescription}
                 Language: ${submittedQuestion.language}
                 
-                --- SUBMITTED CODE ---
-                \`\`\`${submittedQuestion.language}\n${userCode}\n\`\`\`
+                --- TEST CASE FAILURE DETAILS ---
+                Input: \n${testInput}\n
+                Expected Output: \n${expectedOutput}\n
+                Student's Actual Output: \n${actualOutput}\n
 
-                --- EVALUATION CRITERIA ---
-                1. Correctness: Does the code solve the problem? (40% weight)
-                2. Logic/Algorithm: Is the approach sound, even if incomplete? (40% weight)
-                3. Readability/Structure: Is the code well-organized and commented? (20% weight)
+                --- GRADING CRITERIA ---
+                1. Correctness (Weight 40%): How close is the logic/output to the expected result?
+                2. Logic/Algorithm (Weight 40%): Soundness and efficiency of the approach.
+                3. Readability/Structure (Weight 20%): Quality of code organization and comments.
 
-                Assign a final score from 0 to 49. A score of 50 is reserved for perfectly correct and optimal solutions.
-                The student failed the single automated test case on the client side.
-                
+                Assign a final score from 1 to 49.
                 Provide ONLY the final score as a single integer number. DO NOT include any text, reasoning, or markdown formatting (e.g., no asterisks, no quotes, no code blocks, just the number).
             `;
             
             const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text.trim();
+            const response = result.response;
+            
+            // FIX 1: Safely convert response text to string and trim to prevent AI error
+            const text = String(response.text || '').trim(); 
             
             const parsedScore = parseInt(text, 10);
-            score = isNaN(parsedScore) ? 1 : Math.min(49, Math.max(0, parsedScore)); 
+            
+            // FIX 2: Correctly assign and clamp AI score between 1 and 49
+            if (!isNaN(parsedScore)) {
+                aiScore = Math.min(49, Math.max(1, parsedScore)); 
+            } else {
+                console.warn(`AI returned non-numeric score: "${text}". Defaulting to 1.`);
+            }
+            
+            score = aiScore;
 
         } catch (error) {
-            console.error("Gemini API Error:", error);
-            score = 1; // Assign a minimum score if AI fails
+            console.error("Gemini AI Error:", error);
+            score = 1; // Score is 1 on AI error
         }
+    } else {
+        // Path 3: Time ran out or Malpractice redirect (score=0 enforced)
+         score = 0;
     }
 
-    const sql = `UPDATE users SET score = ? WHERE email = ? AND exam = ?`;
+    // 3. Update Score in SQLite (Primary Storage)
+    const sqliteSql = `UPDATE users SET score = ? WHERE email = ? AND exam_id = ?`; 
     
-    db.run(sql, [score, email, exam], function(err) {
+    db.run(sqliteSql, [score, email, examId], function(err) {
         if (err) {
             console.error('DB Error (Submit Exam):', err.message);
-            return res.status(500).json({ message: 'Failed to save score. (DB Error)' }); 
         }
         
         if (this.changes === 0) {
-            console.error(`[DB FAILED] UPDATE affected 0 rows. User/Exam combination not found in DB.`);
-            return res.status(404).json({ message: 'Error: User not found in database or exam name mismatch.' }); 
+            console.error(`[DB FAILED] UPDATE affected 0 rows. User/Exam combination not found in DB. Falling back.`);
+            const fallbackSql = `UPDATE users SET score = ? WHERE email = ?`;
+             db.run(fallbackSql, [score, email], (err) => {
+                 if (err || this.changes === 0) {
+                     console.error(`[DB CRITICAL FAILED] Could not save score for ${email}.`);
+                 } else {
+                     console.log(`[DB SUCCESS] Score saved using fallback for ${email}.`);
+                 }
+             });
         }
         
+        // 4. Update Score in Firebase (Secondary Storage)
+        try {
+            const firebaseDocId = `${email}_${examId}`; 
+            
+            console.log(`[FIREBASE ACTION - SUBMIT] Updating score (${score}) for document: ${firebaseDocId}`);
+
+            firestore.collection('registrations').doc(firebaseDocId).set({
+                score: score, 
+                submissionTime: admin.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            
+        } catch (firebaseError) {
+            console.error('FIREBASE SCORE UPDATE FAILED:', firebaseError);
+        }
+
+        // 5. Final response and email
         sendCompletionEmail(email, examFullName, score);
         
-        console.log(`[DB SUCCESS] Score saved for ${email}. Rows affected: ${this.changes}`);
         res.status(200).json({ message: 'Exam submitted!', score: score });
     });
 });

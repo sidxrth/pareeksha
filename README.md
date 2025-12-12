@@ -1,63 +1,99 @@
-Pareeksha: Real-Time Coding Examination Platform 👨‍💻
-Pareeksha is a fully-featured, real-time coding examination platform designed with a dual-application architecture to facilitate secure, synchronized, and automated technical assessments.
+Pareeksha: Real-Time Coding Examination & AI Proctoring Platform
 
-✨ Features
-This platform provides a comprehensive workflow for exam management, from distribution to evaluation, offering:
+Pareeksha is a real-time coding examination platform built with a dual-application architecture: one application for students and another for teachers. It supports live code monitoring, automated evaluation, secure authentication, and in-browser AI proctoring using face-api.js.
 
-Dual-Application Architecture: Separate applications for Students (Client) and Teachers (Admin).
+The system is designed to be lightweight, scalable, and privacy-first. All face detection and proctoring logic runs inside the student's browser. No video or image data is ever uploaded.
 
-Secure Authentication: Robust user login system.
+FEATURES
 
-AI-Driven Proctoring: Real-time monitoring of students during the exam for academic integrity (inferred from face-api.js and face.html).
+Dual Student and Teacher applications
 
-Live Synchronization: Real-time updates and synchronization of exam status and code.
+Browser-based AI proctoring (face detection, face missing, multiple faces)
 
-Automated Evaluation: System for automatically scoring coding submissions.
+Real-time code synchronization between student and teacher
 
-Complete Exam Management Workflow: Tools for creating, distributing, and managing examinations.
+Automated code evaluation with test-case checking
 
-🛠️ Technology Stack
-The project utilizes a web-based architecture packaged for desktop use (likely Electron based on the file structure and dual-app description) with a focus on real-time capabilities.
+Secure login and user management
 
-Frontend: HTML, JavaScript (Inferred: Web technologies for the UI).
+Full examination workflow: create exams, assign students, monitor, evaluate
 
-Backend/Runtime: Node.js (inferred from package.json, server.js, main.js).
+SYSTEM ARCHITECTURE
 
-Database: Firebase (inferred from firebase-init.js) and SQLite (inferred from users.db).
+Pareeksha uses an event-driven real-time design:
 
-AI/Proctoring: face-api.js (for face detection/recognition).
+Student Application
+Runs the coding environment and AI proctoring logic locally.
 
-🚀 Getting Started
-Follow these steps to set up the project locally.
+Node.js Event Relay Server
+Receives and validates proctoring events.
 
-1. Clone the Repository
-Clone the project to your local machine:
+Firebase Realtime Database
+Stores and streams events instantly.
 
-Bash
+Teacher Dashboard Application
+Displays real-time alerts and exam activity.
 
-git clone https://github.com/sidxrth/pareeksha.git
+FOLDER STRUCTURE
+
+pareeksha/
+├── server/ (Backend Node.js event relay)
+├── student/ (Student interface + AI proctoring)
+├── TeacherProject/ (Teacher dashboard)
+├── models/ (ML models for face detection)
+├── assets/ (For screenshots/diagrams if added later)
+├── README.md
+└── LICENSE
+
+GETTING STARTED
+
+Clone the repository
+git clone https://github.com/sidxrth/pareeksha
+
 cd pareeksha
-2. Installation
-Install the necessary dependencies using npm:
 
-Bash
-
+Install dependencies
 npm install
-3. Crucial Setup Step (Separate Apps)
-The Student Project (default app) and the Teacher Project are designed to run independently and may conflict if run from the same location.
 
-⚠️ IMPORTANT: For smooth operation, you must copy the TeacherProject folder to a separate location on your system before running the applications.
+RUNNING THE APPLICATIONS
 
-Bash
-
-# Example: Copy the Teacher App to a separate folder outside the main project
-cp -R TeacherProject /path/to/another/directory/Teacher_App_Standalone
-4. Running the Applications
-A. Running the Student App (Default Project)
-The core directory (pareeksha/) contains the Student App. Run it from the main directory:
-
-Bash
+STUDENT APPLICATION
+Run the student application:
 
 npm start
-B. Running the Teacher App
-Navigate to the separate directory where you copied the Teacher App folder (/path/to/another/directory/Teacher_App_Standalone in the example above) and run it from there. You may need to run installation steps again if you moved the project.
+
+Then open:
+student/index.html
+
+TEACHER APPLICATION (MUST BE IN A SEPARATE FOLDER)
+
+The teacher project must be run from outside the main directory.
+
+Copy the teacher project:
+cp -R TeacherProject ../Teacher_App
+
+Then run it:
+cd ../Teacher_App
+npm install
+npm start
+
+Open:
+TeacherProject/index.html
+
+AI PROCTORING WORKFLOW
+
+Webcam activates in the student's browser
+
+AI models load locally (face-api.js)
+
+Face detection runs continuously
+
+Anomaly events are generated (face missing, multiple faces, etc.)
+
+Node.js server validates the event
+
+Firebase stores the event
+
+Teacher dashboard receives alerts in real time
+
+All proctoring logic runs locally on the student's device for privacy.

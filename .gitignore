@@ -1,10 +1,48 @@
-dist/ 
-node_modules/ 
-*.exe 
-*.asar 
-"dist/" 
-"node_modules/" 
-"*.exe" 
-"*.asar" 
-node_modules/ 
-serviceAccountKey.json 
+# Dependency folders
+node_modules/
+dist/
+build/
+out/
+tmp/
+temp/
+
+# Electron / Desktop build output
+win-unpacked/
+*.asar
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Databases and cache
+*.db
+*.sqlite
+cache/
+storage/
+
+# Executables and binaries
+*.exe
+*.dll
+*.zip
+
+# Environment / secrets
+.env
+.env.local
+serviceAccountKey.json
+firebase.json
+firebase-debug.log
+
+# Misc files
+*.pid
+*.orig
+*.swp
+*.temp
+*.bak
+
+# Assets that should not be committed automatically
+assets/demo/*
+assets/screenshots/*
+assets/diagrams/*
